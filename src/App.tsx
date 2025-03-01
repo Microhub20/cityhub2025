@@ -1615,7 +1615,22 @@ const ArticleEditorContent = ({ item, onClose }) => {
                   <label>Typ:</label>
                   <select 
                     value={selectedElement.type}
-                    onChange={(e) => updateArticleElement(selectedElement.id, { type: e.target.value })}
+                    onChange={(e) => {
+                      const newType = e.target.value;
+                      // Zurücksetzen der zugehörigen Daten beim Wechsel des Typs
+                      const updatedElement = {
+                        ...selectedElement,
+                        type: newType,
+                        content: '',  // Inhalt zurücksetzen
+                        // Zusätzliche typspezifische Daten zurücksetzen
+                        linkText: newType === 'link' ? 'Link anzeigen' : undefined,
+                        emailText: newType === 'email' ? '' : undefined,
+                        phoneText: newType === 'phone' ? '' : undefined,
+                        fileName: newType === 'file' ? '' : undefined
+                      };
+                      setSelectedElement(updatedElement);
+                      updateArticleElement(selectedElement.id, updatedElement);
+                    }}
                   >
                     <option value="text">Text</option>
                     <option value="link">Link</option>
