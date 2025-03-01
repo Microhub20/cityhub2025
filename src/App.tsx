@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { adminService } from './api/adminService';
 import { Check, ChevronDown, Edit, FileEdit, Grid, Home, LogOut, Plus, Settings, Trash, User, X } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // Typdefinitionen für unsere API-Struktur
 interface AppContent {
@@ -443,10 +445,6 @@ const MaengelContent = () => {
     createdAt: new Date()
   });
   const [mapTab, setMapTab] = useState('karte');
-  
-  // Import für PDF Export
-  import { jsPDF } from 'jspdf';
-  import html2canvas from 'html2canvas';
   
   // Handler für das Öffnen des Bearbeitungsmodals
   const openEditModal = (maengel) => {
