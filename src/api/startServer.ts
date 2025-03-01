@@ -5,6 +5,9 @@ import app from './index';
 const port = process.env.PORT || 3001;
 app.listen(port, '0.0.0.0', () => {
   console.log(`CityHub API-Server läuft auf Port ${port}`);
+  console.log(`API-Endpunkte verfügbar unter: ${port}/api/...`);
+  
+  // Alle verfügbaren Endpunkte ausgeben
   console.log(`API-Endpunkte:`);
   console.log(`- GET    /api/content`);
   console.log(`- GET    /api/content/:id`);
