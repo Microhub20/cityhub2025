@@ -2907,6 +2907,24 @@ const WasteCalendarContent = () => {
     // Würde einen Dialog öffnen, um mehrere Termine für verschiedene Regionen und Abfallarten zu erstellen
   };
 
+  // Region hinzufügen Button-Komponente
+  const AddRegionButton = () => (
+    <div className="add-region-container">
+      <button className="add-region-button" onClick={() => {
+        setIsAddingItem(true);
+        setFormData({
+          ...formData,
+          id: null,
+          name: '',
+          description: '',
+          isActive: true
+        });
+      }}>
+        <Plus size={16} /> Region hinzufügen
+      </button>
+    </div>
+  );
+  
   // Terminkalenderansicht
   const CalendarView = () => {
     // Kalendernavigation
@@ -3081,85 +3099,69 @@ const WasteCalendarContent = () => {
 
   return (
     <div className="waste-calendar-content">
-      <div className="waste-calendar-header">
-        <h1>Abfallkalender-Verwaltung</h1>
-        <div className="tab-buttons">
-          <button
-            className={`tab-button ${activeTab === 'regions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('regions')}
-          >
-            Regionen
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'wasteTypes' ? 'active' : ''}`}
-            onClick={() => setActiveTab('wasteTypes')}
-          >
-            Abfallarten
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'schedules' ? 'active' : ''}`}
-            onClick={() => setActiveTab('schedules')}
-          >
-            Abholtermine
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'calendar' ? 'active' : ''}`}
-            onClick={() => setActiveTab('calendar')}
-          >
-            Kalender
-          </button>
-        </div>
+      <h1>Abfallkalender-Verwaltung</h1>
+      
+      <div className="tab-buttons">
+        <button
+          className={`tab-button ${activeTab === 'regions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('regions')}
+        >
+          Regionen
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'wasteTypes' ? 'active' : ''}`}
+          onClick={() => setActiveTab('wasteTypes')}
+        >
+          Abfallarten
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'schedules' ? 'active' : ''}`}
+          onClick={() => setActiveTab('schedules')}
+        >
+          Abholtermine
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'calendar' ? 'active' : ''}`}
+          onClick={() => setActiveTab('calendar')}
+        >
+          Kalender
+        </button>
       </div>
 
       <div className="waste-calendar-content-body">
         {/* Regionen-Verwaltung */}
         {activeTab === 'regions' && (
           <div className="regions-tab">
-            <div className="table-actions">
-              <h2>Stadtbezirke</h2>
-              <button className="add-button" onClick={() => {
-                setIsAddingItem(true);
-                setFormData({
-                  ...formData,
-                  id: null,
-                  name: '',
-                  description: '',
-                  isActive: true
-                });
-              }}>
-                <Plus size={16} /> Region hinzufügen
-              </button>
-            </div>
+            <h2 className="content-title">Stadtbezirke</h2>
+            <AddRegionButton />
 
-            <div className="table-container">
-              <div className="table-header">
-                <div className="column-20">Name</div>
-                <div className="column-50">Beschreibung</div>
-                <div className="column-15">Status</div>
-                <div className="column-15">Aktionen</div>
+            <div className="data-list">
+              <div className="list-header">
+                <div className="column-name">Name</div>
+                <div className="column-description">Beschreibung</div>
+                <div className="column-status">Status</div>
+                <div className="column-actions">Aktionen</div>
               </div>
-
-              <div className="table-body">
-                {regions.map(region => (
-                  <div className="table-row" key={region.id}>
-                    <div className="column-20">{region.name}</div>
-                    <div className="column-50">{region.description}</div>
-                    <div className="column-15">
-                      <span className={`status-badge ${region.isActive ? 'active' : 'inactive'}`}>
-                        {region.isActive ? 'Aktiv' : 'Inaktiv'}
-                      </span>
-                    </div>
-                    <div className="column-15 actions">
-                      <button className="action-btn edit" title="Bearbeiten" onClick={() => handleEdit('region', region)}>
-                        <Edit size={16} />
-                      </button>
-                      <button className="action-btn delete" title="Löschen" onClick={() => handleDelete('region', region.id)}>
-                        <Trash size={16} />
-                      </button>
-                    </div>
+              
+              {regions.map(region => (
+                <div key={region.id} className="data-row">
+                  <div className="column-name">{region.name}</div>
+                  <div className="column-description">{region.description}</div>
+                  <div className="column-status">
+                    <span className={`status-badge ${region.isActive ? 'active' : 'inactive'}`}>
+                      {region.isActive ? 'Aktiv' : 'Inaktiv'}
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <div className="column-actions">
+                    <button className="action-edit" onClick={() => handleEdit('region', region)}>
+                      <Edit size={18} />
+                    </button>
+                    <button className="action-delete" onClick={() => handleDelete('region', region.id)}>
+                      <Trash size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {isAddingItem && (
@@ -3225,9 +3227,9 @@ const WasteCalendarContent = () => {
         {/* Abfallarten-Verwaltung */}
         {activeTab === 'wasteTypes' && (
           <div className="waste-types-tab">
-            <div className="table-actions">
-              <h2>Abfallarten</h2>
-              <button className="add-button" onClick={() => {
+            <h2 className="content-title">Abfallarten</h2>
+            <div className="add-region-container">
+              <button className="add-region-button" onClick={() => {
                 setIsAddingItem(true);
                 setFormData({
                   ...formData,
@@ -3242,43 +3244,38 @@ const WasteCalendarContent = () => {
               </button>
             </div>
 
-            <div className="table-container">
-              <div className="table-header">
-                <div className="column-20">Name</div>
-                <div className="column-40">Beschreibung</div>
-                <div className="column-15">Farbe</div>
-                <div className="column-10">Status</div>
-                <div className="column-15">Aktionen</div>
+            <div className="data-list">
+              <div className="list-header">
+                <div className="column-name">Name</div>
+                <div className="column-description">Beschreibung</div>
+                <div className="column-color">Farbe</div>
+                <div className="column-status">Status</div>
+                <div className="column-actions">Aktionen</div>
               </div>
-
-              <div className="table-body">
-                {wasteTypes.map(wasteType => (
-                  <div className="table-row" key={wasteType.id}>
-                    <div className="column-20">{wasteType.name}</div>
-                    <div className="column-40">{wasteType.description}</div>
-                    <div className="column-15">
-                      <div 
-                        className="color-preview" 
-                        style={{ backgroundColor: wasteType.color }}
-                      ></div>
-                      <span className="color-code">{wasteType.color}</span>
-                    </div>
-                    <div className="column-10">
-                      <span className={`status-badge ${wasteType.isActive ? 'active' : 'inactive'}`}>
-                        {wasteType.isActive ? 'Aktiv' : 'Inaktiv'}
-                      </span>
-                    </div>
-                    <div className="column-15 actions">
-                      <button className="action-btn edit" title="Bearbeiten" onClick={() => handleEdit('wasteType', wasteType)}>
-                        <Edit size={16} />
-                      </button>
-                      <button className="action-btn delete" title="Löschen" onClick={() => handleDelete('wasteType', wasteType.id)}>
-                        <Trash size={16} />
-                      </button>
-                    </div>
+              
+              {wasteTypes.map(wasteType => (
+                <div key={wasteType.id} className="data-row">
+                  <div className="column-name">{wasteType.name}</div>
+                  <div className="column-description">{wasteType.description}</div>
+                  <div className="column-color">
+                    <div className="color-preview" style={{ backgroundColor: wasteType.color }}></div>
+                    <span>{wasteType.color}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="column-status">
+                    <span className={`status-badge ${wasteType.isActive ? 'active' : 'inactive'}`}>
+                      {wasteType.isActive ? 'Aktiv' : 'Inaktiv'}
+                    </span>
+                  </div>
+                  <div className="column-actions">
+                    <button className="action-edit" onClick={() => handleEdit('wasteType', wasteType)}>
+                      <Edit size={18} />
+                    </button>
+                    <button className="action-delete" onClick={() => handleDelete('wasteType', wasteType.id)}>
+                      <Trash size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {isAddingItem && (
@@ -3364,78 +3361,74 @@ const WasteCalendarContent = () => {
         {/* Abholtermine-Verwaltung */}
         {activeTab === 'schedules' && (
           <div className="schedules-tab">
-            <div className="table-actions">
-              <h2>Abholtermine</h2>
-              <div className="action-buttons">
-                <button className="add-button" onClick={() => {
-                  setIsAddingItem(true);
-                  setFormData({
-                    ...formData,
-                    id: null,
-                    regionId: regions[0]?.id || '',
-                    wasteTypeId: wasteTypes[0]?.id || '',
-                    date: new Date(),
-                    notificationSent: false
-                  });
-                }}>
-                  <Plus size={16} /> Termin hinzufügen
-                </button>
-                <button className="bulk-button" onClick={createBulkSchedules}>
-                  <Plus size={16} /> Mehrere Termine
-                </button>
-                <button className="export-button">
-                  <FileEdit size={16} /> CSV Export
-                </button>
-              </div>
+            <h2 className="content-title">Abholtermine</h2>
+            <div className="action-buttons-container">
+              <button className="primary-action-button" onClick={() => {
+                setIsAddingItem(true);
+                setFormData({
+                  ...formData,
+                  id: null,
+                  regionId: regions[0]?.id || '',
+                  wasteTypeId: wasteTypes[0]?.id || '',
+                  date: new Date(),
+                  notificationSent: false
+                });
+              }}>
+                <Plus size={16} /> Termin hinzufügen
+              </button>
+              <button className="secondary-action-button" onClick={createBulkSchedules}>
+                <Plus size={16} /> Mehrere Termine
+              </button>
+              <button className="tertiary-action-button">
+                <FileEdit size={16} /> CSV Export
+              </button>
             </div>
 
-            <div className="table-container">
-              <div className="table-header">
-                <div className="column-20">Region</div>
-                <div className="column-20">Abfallart</div>
-                <div className="column-20">Datum</div>
-                <div className="column-20">Benachrichtigung</div>
-                <div className="column-20">Aktionen</div>
+            <div className="data-list">
+              <div className="list-header">
+                <div className="column-region">Region</div>
+                <div className="column-waste-type">Abfallart</div>
+                <div className="column-date">Datum</div>
+                <div className="column-notification">Benachrichtigung</div>
+                <div className="column-actions">Aktionen</div>
               </div>
-
-              <div className="table-body">
-                {schedules.map(schedule => {
-                  const wasteType = getWasteTypeInfo(schedule.wasteTypeId);
-
-                  return (
-                    <div className="table-row" key={schedule.id}>
-                      <div className="column-20">{getRegionName(schedule.regionId)}</div>
-                      <div className="column-20">
-                        <div className="waste-type-indicator">
-                          <div className="waste-color" style={{ backgroundColor: wasteType.color }}></div>
-                          <span>{wasteType.name}</span>
-                        </div>
-                      </div>
-                      <div className="column-20">{formatDate(schedule.date)}</div>
-                      <div className="column-20">
-                        {schedule.notificationSent ? (
-                          <span className="notification-status sent">Gesendet</span>
-                        ) : (
-                          <button 
-                            className="send-notification-btn"
-                            onClick={() => sendNotification(schedule.id)}
-                          >
-                            Senden
-                          </button>
-                        )}
-                      </div>
-                      <div className="column-20 actions">
-                        <button className="action-btn edit" title="Bearbeiten" onClick={() => handleEdit('schedule', schedule)}>
-                          <Edit size={16} />
-                        </button>
-                        <button className="action-btn delete" title="Löschen" onClick={() => handleDelete('schedule', schedule.id)}>
-                          <Trash size={16} />
-                        </button>
+              
+              {schedules.map(schedule => {
+                const wasteType = getWasteTypeInfo(schedule.wasteTypeId);
+                
+                return (
+                  <div key={schedule.id} className="data-row">
+                    <div className="column-region">{getRegionName(schedule.regionId)}</div>
+                    <div className="column-waste-type">
+                      <div className="waste-type-indicator">
+                        <div className="waste-color" style={{ backgroundColor: wasteType.color }}></div>
+                        <span>{wasteType.name}</span>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="column-date">{formatDate(schedule.date)}</div>
+                    <div className="column-notification">
+                      {schedule.notificationSent ? (
+                        <span className="notification-sent">Gesendet</span>
+                      ) : (
+                        <button 
+                          className="send-notification-button"
+                          onClick={() => sendNotification(schedule.id)}
+                        >
+                          Senden
+                        </button>
+                      )}
+                    </div>
+                    <div className="column-actions">
+                      <button className="action-edit" onClick={() => handleEdit('schedule', schedule)}>
+                        <Edit size={18} />
+                      </button>
+                      <button className="action-delete" onClick={() => handleDelete('schedule', schedule.id)}>
+                        <Trash size={18} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {isAddingItem && (
