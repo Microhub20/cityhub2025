@@ -23,7 +23,7 @@ interface AppContent {
 }
 
 // Sidebar-Komponente
-const Sidebar = ({ activeView, setActiveView }) => {
+const Sidebar = ({ activeView, setActiveView }: { activeView: string, setActiveView: (view: string) => void }) => {
   return (
     <div className="sidebar">
       <div className="logo">
