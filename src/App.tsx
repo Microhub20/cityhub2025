@@ -1734,7 +1734,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                 + Telefonnummer hinzufügen
               </button>
               <button className="add-element-btn" onClick={() => addArticleElement('date')}>
-                + Termine hinzufügen
+                                + Termine hinzufügen
               </button>
             </div>
           </div></div>
@@ -2922,6 +2922,11 @@ const WasteCalendarContent = () => {
       setSelectedDate(newDate);
     };
 
+    // Zum aktuellen Monat springen
+    const goToCurrentMonth = () => {
+      setSelectedDate(new Date());
+    };
+
     // Kalender-Header mit Monatsbezeichnung
     const monthName = selectedDate.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
 
@@ -2942,6 +2947,17 @@ const WasteCalendarContent = () => {
     // In Deutschland beginnt die Woche mit Montag, daher Anpassung
     firstDayOfMonth = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
+    // Gefilterte Termine
+    const filteredSchedules = schedules.filter(schedule => {
+      if (filterRegion !== 'all' && schedule.regionId !== parseInt(filterRegion)) {
+        return false;
+      }
+      if (filterWasteType !== 'all' && schedule.wasteTypeId !== parseInt(filterWasteType)) {
+        return false;
+      }
+      return true;
+    });
+
     // Kalender-Tage erstellen
     const calendarDays = [];
     for (let i = 0; i < firstDayOfMonth; i++) {
@@ -2950,16 +2966,23 @@ const WasteCalendarContent = () => {
 
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
+      const isToday = 
+        new Date().getDate() === day && 
+        new Date().getMonth() === currentDate.getMonth() && 
+        new Date().getFullYear() === currentDate.getFullYear();
 
       // Abholtermine für diesen Tag finden
-      const daySchedules = schedules.filter(schedule => 
+      const daySchedules = filteredSchedules.filter(schedule => 
         schedule.date.getDate() === day &&
         schedule.date.getMonth() === currentDate.getMonth() &&
         schedule.date.getFullYear() === currentDate.getFullYear()
       );
 
       calendarDays.push(
-        <div key={`day-${day}`} className={`calendar-day ${daySchedules.length > 0 ? 'has-schedules' : ''}`}>
+        <div 
+          key={`day-${day}`} 
+          className={`calendar-day ${daySchedules.length > 0 ? 'has-schedules' : ''} ${isToday ? 'today' : ''}`}
+        >
           <div className="day-number">{day}</div>
           {daySchedules.map(schedule => {
             const wasteType = getWasteTypeInfo(schedule.wasteTypeId);
@@ -2968,36 +2991,89 @@ const WasteCalendarContent = () => {
                 key={schedule.id}
                 className="calendar-schedule"
                 style={{ backgroundColor: wasteType.color }}
+                onClick={() => handleEdit('schedule', schedule)}
+                title={`${getRegionName(schedule.regionId)} - ${wasteType.name}`}
               >
                 <span className="schedule-region">{getRegionName(schedule.regionId)}</span>
                 <span className="schedule-type">{wasteType.name}</span>
               </div>
             );
           })}
+          {daySchedules.length === 0 && (
+            <div 
+              className="add-schedule-day" 
+              onClick={() => {
+                const newDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
+                setFormData({
+                  ...formData,
+                  id: null,
+                  regionId: filterRegion !== 'all' ? parseInt(filterRegion) : (regions[0]?.id || 1),
+                  wasteTypeId: filterWasteType !== 'all' ? parseInt(filterWasteType) : (wasteTypes[0]?.id || 1),
+                  date: newDate,
+                  notificationSent: false
+                });
+                setIsAddingItem(true);
+              }}
+            >
+              <span className="add-day-icon">+</span>
+            </div>
+          )}
         </div>
       );
     }
 
     return (
-      <div className="calendar-container">
-        <div className="calendar-header">
-          <button onClick={prevMonth} className="calendar-nav-btn">◀</button>
-          <h3>{monthName}</h3>
-          <button onClick={nextMonth} className="calendar-nav-btn">▶</button>
+      <div className="calendar-view-container">
+        <div className="calendar-filters">
+          <div className="calendar-filter-group">
+            <label htmlFor="region-filter">Region filtern:</label>
+            <select 
+              id="region-filter" 
+              value={filterRegion} 
+              onChange={(e) => setFilterRegion(e.target.value)}
+            >
+              <option value="all">Alle Regionen</option>
+              {regions.map(region => (
+                <option key={region.id} value={region.id}>{region.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="calendar-filter-group">
+            <label htmlFor="waste-type-filter">Abfallart filtern:</label>
+            <select 
+              id="waste-type-filter" 
+              value={filterWasteType} 
+              onChange={(e) => setFilterWasteType(e.target.value)}
+            >
+              <option value="all">Alle Abfallarten</option>
+              {wasteTypes.map(wasteType => (
+                <option key={wasteType.id} value={wasteType.id}>{wasteType.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="calendar-weekdays">
-          <div>Mo</div>
-          <div>Di</div>
-          <div>Mi</div>
-          <div>Do</div>
-          <div>Fr</div>
-          <div>Sa</div>
-          <div>So</div>
-        </div>
+        <div className="calendar-container">
+          <div className="calendar-header">
+            <button onClick={prevMonth} className="calendar-nav-btn">◀</button>
+            <h3>{monthName}</h3>
+            <button onClick={nextMonth} className="calendar-nav-btn">▶</button>
+            <button onClick={goToCurrentMonth} className="calendar-today-btn">Heute</button>
+          </div>
 
-        <div className="calendar-grid">
-          {calendarDays}
+          <div className="calendar-weekdays">
+            <div>Mo</div>
+            <div>Di</div>
+            <div>Mi</div>
+            <div>Do</div>
+            <div>Fr</div>
+            <div>Sa</div>
+            <div>So</div>
+          </div>
+
+          <div className="calendar-grid">
+            {calendarDays}
+          </div>
         </div>
       </div>
     );
