@@ -859,6 +859,7 @@ const MenuEditorContent = () => {
   ]);
   
   const [editingItem, setEditingItem] = useState(null);
+  const [selectedArticleId, setSelectedArticleId] = useState(null);
   const [menuFormData, setMenuFormData] = useState({
     id: null,
     title: '',
@@ -891,6 +892,11 @@ const MenuEditorContent = () => {
   const handleEditItem = (item) => {
     setEditingItem(item);
     setMenuFormData({...item});
+  };
+  
+  // Öffne Artikel-Editor für ein bestimmtes Element
+  const openArticleEditor = (itemId) => {
+    setSelectedArticleId(itemId);
   };
   
   // Menüeintrag entfernen
@@ -985,6 +991,12 @@ const MenuEditorContent = () => {
   // Sortiere Menüeinträge für die Anzeige
   const sortedMenuItems = [...menuItems].sort((a, b) => a.order - b.order);
   
+  // Wenn ein Artikel ausgewählt ist, zeige den Artikel-Editor an
+  if (selectedArticleId) {
+    const selectedItem = menuItems.find(item => item.id === selectedArticleId);
+    return <ArticleEditorContent item={selectedItem} onClose={() => setSelectedArticleId(null)} />;
+  }
+  
   return (
     <div className="menu-editor-content">
       <div className="menu-editor-header">
@@ -1019,6 +1031,9 @@ const MenuEditorContent = () => {
                     <button className="action-btn edit" onClick={() => handleEditItem(item)}>
                       <Edit size={16} />
                     </button>
+                    <button className="action-btn edit" onClick={() => openArticleEditor(item.id)} title="Artikel bearbeiten">
+                      <FileEdit size={16} />
+                    </button>
                     <button className="action-btn up" onClick={() => moveItemUp(item.id)}>
                       <span>▲</span>
                     </button>
@@ -1045,6 +1060,9 @@ const MenuEditorContent = () => {
                             <div className="menu-item-actions">
                               <button className="action-btn edit" onClick={() => handleEditItem(subItem)}>
                                 <Edit size={16} />
+                              </button>
+                              <button className="action-btn edit" onClick={() => openArticleEditor(subItem.id)} title="Artikel bearbeiten">
+                                <FileEdit size={16} />
                               </button>
                               <button className="action-btn up" onClick={() => moveItemUp(subItem.id)}>
                                 <span>▲</span>
@@ -1090,6 +1108,9 @@ const MenuEditorContent = () => {
                   <div className="menu-item-actions">
                     <button className="action-btn edit" onClick={() => handleEditItem(item)}>
                       <Edit size={16} />
+                    </button>
+                    <button className="action-btn edit" onClick={() => openArticleEditor(item.id)} title="Artikel bearbeiten">
+                      <FileEdit size={16} />
                     </button>
                     <button className="action-btn up" onClick={() => moveItemUp(item.id)}>
                       <span>▲</span>
@@ -1186,6 +1207,283 @@ const MenuEditorContent = () => {
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+// Artikeleditor-Komponente
+const ArticleEditorContent = ({ item, onClose }) => {
+  const [articleTitle, setArticleTitle] = useState(item.title || "");
+  const [articleElements, setArticleElements] = useState([
+    { id: 1, type: 'text', content: '', label: 'Zeile 1' },
+    { id: 2, type: 'image', content: '', label: 'Zeile 2' }
+  ]);
+  const [selectedElement, setSelectedElement] = useState(null);
+  
+  // Artikelelement hinzufügen
+  const addArticleElement = (type) => {
+    const newId = Math.max(...articleElements.map(el => el.id), 0) + 1;
+    const newElement = {
+      id: newId,
+      type,
+      content: '',
+      label: `Zeile ${newId}`
+    };
+    
+    setArticleElements([...articleElements, newElement]);
+  };
+  
+  // Artikelelement entfernen
+  const removeArticleElement = (id) => {
+    setArticleElements(articleElements.filter(el => el.id !== id));
+    if (selectedElement && selectedElement.id === id) {
+      setSelectedElement(null);
+    }
+  };
+  
+  // Artikelelement aktualisieren
+  const updateArticleElement = (id, data) => {
+    setArticleElements(articleElements.map(el => 
+      el.id === id ? {...el, ...data} : el
+    ));
+  };
+  
+  // Komponente für Textelement
+  const TextElementEditor = ({ element }) => {
+    return (
+      <div className="element-editor text-editor">
+        <textarea
+          value={element.content}
+          onChange={(e) => updateArticleElement(element.id, { content: e.target.value })}
+          placeholder="Text eingeben..."
+          rows={4}
+        ></textarea>
+      </div>
+    );
+  };
+  
+  // Komponente für Bild-Element
+  const ImageElementEditor = ({ element }) => {
+    const [imageSrc, setImageSrc] = useState(element.content || '');
+    
+    // Simuliere Bildauswahl
+    const handleImageSelect = () => {
+      // In einer echten App würde hier ein Datei-Upload stattfinden
+      const sampleImage = 'https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=600';
+      setImageSrc(sampleImage);
+      updateArticleElement(element.id, { content: sampleImage });
+    };
+    
+    return (
+      <div className="element-editor image-editor">
+        {imageSrc ? (
+          <div className="image-preview">
+            <img src={imageSrc} alt="Vorschau" />
+            <button type="button" className="change-image-btn" onClick={handleImageSelect}>
+              Bild ändern
+            </button>
+          </div>
+        ) : (
+          <div className="image-placeholder" onClick={handleImageSelect}>
+            <div className="placeholder-content">
+              <span>Klicken um ein Bild auszuwählen</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // Komponente für Datum-Element
+  const DateElementEditor = ({ element }) => {
+    const [showCalendar, setShowCalendar] = useState(false);
+    
+    const monthData = [
+      { month: 'Januar', dates: '24.01.2025' },
+      { month: 'Februar', dates: '07.02.2025 & 21.02.2025' },
+      { month: 'März', dates: '07.03.2025 & 21.03.2025' },
+      { month: 'April', dates: '04.04.2025 & Donnerstag 17.04.2025' },
+      { month: 'Mai', dates: 'Samstag 03.05.2025 & Samstag 31.05.2025' }
+    ];
+    
+    return (
+      <div className="element-editor date-editor">
+        <div className="date-selector">
+          <button 
+            type="button" 
+            className="date-toggle-btn"
+            onClick={() => setShowCalendar(!showCalendar)}
+          >
+            {showCalendar ? 'Kalender schließen' : 'Termine auswählen'}
+          </button>
+          
+          {showCalendar && (
+            <div className="date-calendar">
+              {monthData.map((item, index) => (
+                <div key={index} className="date-month">
+                  <div className="month-name">{item.month}:</div>
+                  <div className="month-dates">{item.dates}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
+  // Artikel speichern
+  const saveArticle = () => {
+    // Hier würde die Speicherlogik implementiert werden
+    alert('Artikel wurde gespeichert!');
+    onClose();
+  };
+  
+  return (
+    <div className="article-editor-content">
+      <div className="article-editor-header">
+        <div className="article-info">
+          <h1>Auftritt - {item.id}</h1>
+          <div className="article-meta">
+            Kategorie: {item.type === 'menu' ? 'Hauptkategorie' : 'Unterkategorie'}
+          </div>
+        </div>
+        <div className="article-actions">
+          <button className="save-btn" onClick={saveArticle}>
+            Speichern
+          </button>
+          <button className="cancel-btn" onClick={onClose}>
+            Zurück
+          </button>
+        </div>
+      </div>
+      
+      <div className="article-editor-container">
+        <div className="article-sidebar">
+          <div className="article-elements">
+            <h3>Elemente</h3>
+            <div className="element-list">
+              {articleElements.map(element => (
+                <div 
+                  key={element.id} 
+                  className={`element-item ${selectedElement?.id === element.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedElement(element)}
+                >
+                  <div className="element-title">{element.label}</div>
+                  <div className="element-type">Typ: {element.type}</div>
+                  <button 
+                    className="remove-element-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeArticleElement(element.id);
+                    }}
+                  >
+                    <Trash size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="add-element-buttons">
+              <button className="add-element-btn" onClick={() => addArticleElement('text')}>
+                + Text hinzufügen
+              </button>
+              <button className="add-element-btn" onClick={() => addArticleElement('image')}>
+                + Bild hinzufügen
+              </button>
+              <button className="add-element-btn" onClick={() => addArticleElement('date')}>
+                + Termine hinzufügen
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="article-main">
+          <div className="article-title-editor">
+            <label htmlFor="article-title">Titel</label>
+            <input
+              type="text"
+              id="article-title"
+              value={articleTitle}
+              onChange={(e) => setArticleTitle(e.target.value)}
+              placeholder="Artikeltitel eingeben"
+            />
+          </div>
+          
+          <div className="article-content-editor">
+            {selectedElement ? (
+              <div className="selected-element-editor">
+                <h3>{selectedElement.label} bearbeiten</h3>
+                <div className="element-type-selector">
+                  <label>Typ:</label>
+                  <select 
+                    value={selectedElement.type}
+                    onChange={(e) => updateArticleElement(selectedElement.id, { type: e.target.value })}
+                  >
+                    <option value="text">Text</option>
+                    <option value="image">Bild</option>
+                    <option value="date">Termine</option>
+                  </select>
+                </div>
+                
+                {selectedElement.type === 'text' && <TextElementEditor element={selectedElement} />}
+                {selectedElement.type === 'image' && <ImageElementEditor element={selectedElement} />}
+                {selectedElement.type === 'date' && <DateElementEditor element={selectedElement} />}
+                
+                <div className="element-actions">
+                  <button 
+                    className="delete-element-btn"
+                    onClick={() => removeArticleElement(selectedElement.id)}
+                  >
+                    <Trash size={16} /> Element löschen
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="no-element-selected">
+                <p>Bitte wählen Sie ein Element aus der Seitenleiste aus, um es zu bearbeiten.</p>
+              </div>
+            )}
+          </div>
+          
+          <div className="article-preview">
+            <h3>Vorschau</h3>
+            <div className="preview-container">
+              <h2 className="preview-title">{articleTitle || "Artikeltitel"}</h2>
+              
+              {articleElements.map(element => (
+                <div key={element.id} className={`preview-element preview-${element.type}`}>
+                  {element.type === 'text' && (
+                    <div className="preview-text">
+                      {element.content ? element.content : <em>Text wird hier angezeigt...</em>}
+                    </div>
+                  )}
+                  
+                  {element.type === 'image' && (
+                    <div className="preview-image">
+                      {element.content ? (
+                        <img src={element.content} alt="Bild" />
+                      ) : (
+                        <div className="image-placeholder-preview">Bild wird hier angezeigt</div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {element.type === 'date' && (
+                    <div className="preview-date">
+                      <h4>Termine:</h4>
+                      <ul>
+                        <li>Januar: 24.01.2025</li>
+                        <li>Februar: 07.02.2025 & 21.02.2025</li>
+                        <li>März: 07.03.2025 & 21.03.2025</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
