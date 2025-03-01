@@ -407,6 +407,11 @@ body {
   color: #e74c3c;
 }
 
+.action-btn.pdf:hover {
+  background: rgba(52, 73, 94, 0.1);
+  color: #34495e;
+}
+
   gap: 15px;
   transition: all 0.3s;
 }

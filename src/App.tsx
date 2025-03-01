@@ -443,6 +443,11 @@ const MaengelContent = () => {
     createdAt: new Date()
   });
   const [mapTab, setMapTab] = useState('karte');
+  
+  // Import für PDF Export
+  import { jsPDF } from 'jspdf';
+  import html2canvas from 'html2canvas';
+  
   // Handler für das Öffnen des Bearbeitungsmodals
   const openEditModal = (maengel) => {
     setEditingMaengel(maengel);
@@ -471,6 +476,79 @@ const MaengelContent = () => {
     
     setMaengelList(updatedList);
     setEditingMaengel(null);
+  };
+  
+  // PDF Export-Funktion
+  const exportPDF = (maengel) => {
+    // PDF-Dokument erstellen
+    const doc = new jsPDF();
+    
+    // Titel hinzufügen
+    doc.setFontSize(18);
+    doc.text('Mängelmeldung - ' + maengel.title, 14, 22);
+    
+    // Statusbalken
+    doc.setFillColor(maengel.status === 'aktiv' ? 76 : 120, maengel.status === 'aktiv' ? 175 : 120, maengel.status === 'aktiv' ? 80 : 120);
+    doc.rect(14, 28, 180, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.text('Status: ' + (maengel.status === 'aktiv' ? 'Aktiv' : 'Inaktiv'), 18, 34);
+    
+    // Zurück zur schwarzen Textfarbe
+    doc.setTextColor(0, 0, 0);
+    
+    // Bild laden und einfügen (wenn vorhanden)
+    if (maengel.image) {
+      try {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = maengel.image;
+        doc.addImage(img, 'JPEG', 14, 45, 80, 60);
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildes:', error);
+      }
+    }
+    
+    // Informationsabschnitt
+    doc.setFontSize(14);
+    doc.text('Informationen', 14, 120);
+    
+    doc.setFontSize(11);
+    doc.text('Standort: ' + (maengel.location || 'Nicht angegeben'), 14, 130);
+    doc.text('Kategorie: ' + (maengel.category || 'Nicht kategorisiert'), 14, 140);
+    doc.text('Unterkategorie: ' + (maengel.subCategory || 'Keine'), 14, 150);
+    doc.text('Gemeldet von: ' + (maengel.reporterName || 'Anonym'), 14, 160);
+    doc.text('Kontakt: ' + (maengel.reporterEmail || 'Keine E-Mail angegeben'), 14, 170);
+    
+    // Datum formatieren
+    const createdDate = maengel.createdAt instanceof Date 
+      ? maengel.createdAt.toLocaleDateString('de-DE') 
+      : new Date(maengel.createdAt).toLocaleDateString('de-DE');
+    
+    doc.text('Meldedatum: ' + createdDate, 14, 180);
+    
+    // Beschreibung
+    doc.setFontSize(14);
+    doc.text('Beschreibung', 14, 200);
+    
+    // Text umbrechen
+    const splitDescription = doc.splitTextToSize(maengel.description || 'Keine Beschreibung vorhanden', 180);
+    doc.setFontSize(11);
+    doc.text(splitDescription, 14, 210);
+    
+    // Zweite Seite, wenn eine Rückmeldung existiert
+    if (maengel.response) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text('Rückmeldung', 14, 20);
+      
+      const splitResponse = doc.splitTextToSize(maengel.response, 180);
+      doc.setFontSize(11);
+      doc.text(splitResponse, 14, 30);
+    }
+    
+    // PDF speichern
+    doc.save('Maengelmeldung-' + maengel.id + '.pdf');
   };
 
   const [maengelList, setMaengelList] = useState([
@@ -544,6 +622,9 @@ const MaengelContent = () => {
             <div className="column-aktionen">
               <button className="action-btn edit" title="Bearbeiten" onClick={() => openEditModal(maengel)}>
                 <Edit size={18} />
+              </button>
+              <button className="action-btn pdf" title="Als PDF exportieren" onClick={() => exportPDF(maengel)}>
+                <FileEdit size={18} />
               </button>
               <button className="action-btn delete" title="Löschen">
                 <Trash size={18} />
