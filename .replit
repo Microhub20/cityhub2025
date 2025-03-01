@@ -17,3 +17,22 @@ publicDir = "dist"
 [[ports]]
 localPort = 5173
 externalPort = 80
+
+[workflows]
+runButton = "Start Admin"
+
+[[workflows.workflow]]
+name = "API Server"
+author = 40103754
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "ts-node src/api/startServer.ts"
+
+[[workflows.workflow]]
+name = "Start Admin"
+author = 40103754
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
