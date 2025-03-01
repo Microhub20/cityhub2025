@@ -570,12 +570,12 @@ const MaengelContent = () => {
   // Handler für Änderungen an Formularfeldern
   const handleMaengelFormChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Wenn die Kategorie geändert wird, setze die Unterkategorie auf die erste verfügbare
     if (name === 'category') {
       const selectedCategory = savedCategories.find(cat => cat.name === value);
       const firstSubCategory = selectedCategory?.subCategories?.[0]?.name || 'Keine Unterkategorie';
-      
+
       setMaengelFormData({
         ...maengelFormData,
         [name]: value,
@@ -832,7 +832,7 @@ const MaengelContent = () => {
                 <label htmlFor="location">Standort</label>
                 <input
                   type="text"
-                  id="location"
+                  id"location"
                   name="location"
                   value={maengelFormData.location || ''}
                   onChange={handleMaengelFormChange}
@@ -1738,8 +1738,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                 + Termine hinzufügen
               </button>
             </div>
-          </div>
-        </div>
+          </div></div>
 
         <div className="article-main">
           <div className="article-title-editor">
@@ -1925,7 +1924,7 @@ const SettingsContent = () => {
     syncStatus: '',
     syncedItems: 0
   });
-  
+
   // Mängelmelder-Kategorien Status
   const [activeTab, setActiveTab] = useState('api');
   const [categories, setCategories] = useState([
@@ -1954,7 +1953,7 @@ const SettingsContent = () => {
       subCategories: []
     }
   ]);
-  
+
   // Bearbeitungsmodus
   const [editMode, setEditMode] = useState({
     isEditing: false,
@@ -1963,17 +1962,17 @@ const SettingsContent = () => {
     itemName: '',
     parentId: null
   });
-  
+
   // Lädt die API-ID beim Initialisieren
   useEffect(() => {
     // Aus dem localStorage laden
     const savedApiKey = localStorage.getItem('cityhubApiKey') || '';
     const savedAppUrl = localStorage.getItem('cityhubAppUrl') || 'https://cityhub-app.riccosauter.repl.co';
     const savedCategories = localStorage.getItem('cityhubCategories');
-    
+
     setApiKey(savedApiKey);
     setAppUrl(savedAppUrl);
-    
+
     // Gespeicherte Kategorien laden, falls vorhanden
     if (savedCategories) {
       try {
@@ -1982,22 +1981,22 @@ const SettingsContent = () => {
         console.error('Fehler beim Laden der Kategorien:', e);
       }
     }
-    
+
     // Wenn ein API-Key vorhanden ist, Status prüfen
     if (savedApiKey) {
       verifyApiKey(savedApiKey, savedAppUrl);
     }
   }, []);
-  
+
   // API-Key überprüfen
   const verifyApiKey = async (key, url) => {
     setIsVerifying(true);
-    
+
     try {
       // Tatsächliche API-Verbindung versuchen
       const apiUrl = `${url}/api/auth/verify`;
       console.log(`Verifying API connection to: ${apiUrl}`);
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2006,17 +2005,17 @@ const SettingsContent = () => {
         console.error('Fetch error:', error);
         return { ok: false, status: 0 };
       });
-      
+
       // Alternative für Demo/Test wenn Server nicht erreichbar
       const isValid = response.ok || key === 'test-api-key-123' || key === 'app-api-key-456';
-      
+
       if (isValid) {
         generateSyncToken(key, url);
         setConnectionStatus({
           isConnected: true,
           message: response.ok ? 'Verbunden mit CityHub API' : 'Demo-Verbindung aktiv (Testmodus)'
         });
-        
+
         // Bei erfolgreicher Verbindung letzte Sync-Info laden
         checkSyncStatus(key, url);
       } else {
@@ -2025,7 +2024,7 @@ const SettingsContent = () => {
           message: `Verbindung fehlgeschlagen: ${response.status === 0 ? 'Server nicht erreichbar' : 'Ungültiger API-Key'}`
         });
       }
-      
+
     } catch (error) {
       console.error('Fehler bei der API-Key Verifizierung:', error);
       setConnectionStatus({
@@ -2042,16 +2041,16 @@ const SettingsContent = () => {
     try {
       // Tatsächliche Token-Generierung versuchen
       const apiUrl = `${url}/api/auth/sync-token`;
-      
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey: key })
       }).catch(() => null);
-      
+
       // Token aus Antwort extrahieren oder Fallback verwenden
       let token;
-      
+
       if (response && response.ok) {
         const data = await response.json();
         token = data.token;
@@ -2059,11 +2058,11 @@ const SettingsContent = () => {
         // Fallback für Demo/Test
         token = Buffer.from(`1:${Date.now()}`).toString('base64');
       }
-      
+
       // Token speichern
       setSyncToken(token);
       localStorage.setItem('cityhubSyncToken', token);
-      
+
     } catch (error) {
       console.error('Fehler beim Generieren des Sync-Tokens:', error);
     }
@@ -2074,14 +2073,14 @@ const SettingsContent = () => {
     try {
       // Sync-Status abrufen
       const apiUrl = `${url}/api/sync/status`;
-      
+
       const response = await fetch(apiUrl, {
         headers: { 
           'Content-Type': 'application/json',
           'X-API-Key': key
         }
       }).catch(() => null);
-      
+
       if (response && response.ok) {
         const data = await response.json();
         setSyncResults({
@@ -2105,16 +2104,16 @@ const SettingsContent = () => {
   // Synchronisierung starten
   const startSync = async () => {
     if (!connectionStatus.isConnected || !apiKey) return;
-    
+
     try {
       setSyncResults(prev => ({
         ...prev,
         syncStatus: 'Synchronisierung läuft...'
       }));
-      
+
       // Tatsächliche Synchronisierung versuchen
       const syncUrl = `${appUrl}/api/sync/start`;
-      
+
       const response = await fetch(syncUrl, {
         method: 'POST',
         headers: { 
@@ -2123,7 +2122,7 @@ const SettingsContent = () => {
           'X-Sync-Token': syncToken
         }
       }).catch(() => null);
-      
+
       if (response && response.ok) {
         const data = await response.json();
         setSyncResults({
@@ -2153,33 +2152,33 @@ const SettingsContent = () => {
   // Speichert die API-ID und App-URL
   const saveApiKey = () => {
     setIsSaving(true);
-    
+
     // Im localStorage speichern
     localStorage.setItem('cityhubApiKey', apiKey);
     localStorage.setItem('cityhubAppUrl', appUrl);
-    
+
     // API-Key verifizieren
     verifyApiKey(apiKey, appUrl);
-    
+
     setSaveStatus({
       type: 'success',
       message: 'API-Key erfolgreich gespeichert'
     });
-    
+
     // Status-Nachricht nach 3 Sekunden ausblenden
     setTimeout(() => {
       setSaveStatus({ type: '', message: '' });
       setIsSaving(false);
     }, 3000);
   };
-  
+
   // Kategorie-Funktionen
   const toggleCategoryExpand = (categoryId) => {
     setCategories(categories.map(cat => 
       cat.id === categoryId ? { ...cat, isExpanded: !cat.isExpanded } : cat
     ));
   };
-  
+
   const addCategory = () => {
     setEditMode({
       isEditing: true,
@@ -2189,7 +2188,7 @@ const SettingsContent = () => {
       parentId: null
     });
   };
-  
+
   const addSubCategory = (parentId) => {
     setEditMode({
       isEditing: true,
@@ -2199,7 +2198,7 @@ const SettingsContent = () => {
       parentId
     });
   };
-  
+
   const editCategory = (category) => {
     setEditMode({
       isEditing: true,
@@ -2209,7 +2208,7 @@ const SettingsContent = () => {
       parentId: null
     });
   };
-  
+
   const editSubCategory = (subCategory, parentId) => {
     setEditMode({
       isEditing: true,
@@ -2219,14 +2218,14 @@ const SettingsContent = () => {
       parentId
     });
   };
-  
+
   const deleteCategory = (categoryId) => {
     if (window.confirm('Möchten Sie diese Kategorie wirklich löschen?')) {
       setCategories(categories.filter(cat => cat.id !== categoryId));
       saveCategories(categories.filter(cat => cat.id !== categoryId));
     }
   };
-  
+
   const deleteSubCategory = (parentId, subCategoryId) => {
     if (window.confirm('Möchten Sie diese Unterkategorie wirklich löschen?')) {
       const updatedCategories = categories.map(cat => {
@@ -2238,24 +2237,24 @@ const SettingsContent = () => {
         }
         return cat;
       });
-      
+
       setCategories(updatedCategories);
       saveCategories(updatedCategories);
     }
   };
-  
+
   const handleEditChange = (e) => {
     setEditMode({
       ...editMode,
       itemName: e.target.value
     });
   };
-  
+
   const saveEditChanges = () => {
     if (!editMode.itemName.trim()) return;
-    
+
     let updatedCategories;
-    
+
     if (editMode.itemType === 'category') {
       if (editMode.itemId) {
         // Kategorie bearbeiten
@@ -2306,28 +2305,28 @@ const SettingsContent = () => {
         });
       }
     }
-    
+
     setCategories(updatedCategories);
     saveCategories(updatedCategories);
     setEditMode({ isEditing: false, itemType: null, itemId: null, itemName: '', parentId: null });
   };
-  
+
   const cancelEdit = () => {
     setEditMode({ isEditing: false, itemType: null, itemId: null, itemName: '', parentId: null });
   };
-  
+
   const saveCategories = (updatedCategories) => {
     localStorage.setItem('cityhubCategories', JSON.stringify(updatedCategories));
   };
-  
+
   const saveAllCategories = () => {
     saveCategories(categories);
-    
+
     setSaveStatus({
       type: 'success',
       message: 'Kategorien erfolgreich gespeichert'
     });
-    
+
     setTimeout(() => {
       setSaveStatus({ type: '', message: '' });
     }, 3000);
@@ -2352,7 +2351,7 @@ const SettingsContent = () => {
           </button>
         </div>
       </div>
-      
+
       {activeTab === 'api' ? (
         <>
           <div className="settings-section">
@@ -2360,7 +2359,7 @@ const SettingsContent = () => {
             <p className="settings-description">
               Geben Sie Ihren CityHub API-Key ein, um diesen Admin mit der entsprechenden App zu verknüpfen.
             </p>
-            
+
             <div className="form-group">
               <label htmlFor="api-key">CityHub API-Key</label>
               <input
@@ -2375,7 +2374,7 @@ const SettingsContent = () => {
                 Demo API-Keys: "test-api-key-123" oder "app-api-key-456"
               </small>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="app-url">CityHub App URL</label>
               <input
@@ -2390,13 +2389,13 @@ const SettingsContent = () => {
                 URL der CityHub-App, zu der eine Verbindung hergestellt werden soll
               </small>
             </div>
-            
+
             {saveStatus.message && (
               <div className={`status-message ${saveStatus.type}`}>
                 {saveStatus.message}
               </div>
             )}
-            
+
             <div className="settings-actions">
               <button 
                 className="save-settings-btn" 
@@ -2407,7 +2406,7 @@ const SettingsContent = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="settings-section">
             <h2>Verbindungsstatus</h2>
             <div className="connection-status">
@@ -2422,7 +2421,7 @@ const SettingsContent = () => {
                   API-Key: {apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
                 </div>
               )}
-              
+
               {syncToken && (
                 <div className="sync-token-info">
                   <h3>Sync-Token</h3>
@@ -2431,7 +2430,7 @@ const SettingsContent = () => {
                     <code>{syncToken.substring(0, 12)}...{syncToken.substring(syncToken.length - 12)}</code>
                   </div>
                   <p className="token-expiry">Gültig für 60 Minuten</p>
-                  
+
                   {connectionStatus.isConnected && (
                     <div className="sync-actions">
                       <button 
@@ -2441,7 +2440,7 @@ const SettingsContent = () => {
                       >
                         {syncResults.syncStatus === 'Synchronisierung läuft...' ? 'Synchronisierung läuft...' : 'Jetzt synchronisieren'}
                       </button>
-                      
+
                       {syncResults.lastSync && (
                         <div className="sync-status">
                           <div className="sync-status-label">Status:</div>
@@ -2460,7 +2459,7 @@ const SettingsContent = () => {
               )}
             </div>
           </div>
-          
+
           <div className="settings-section">
             <h2>API-Endpunkte</h2>
             <div className="api-endpoints">
@@ -2472,7 +2471,7 @@ const SettingsContent = () => {
                 <li><code>PUT /api/content/:id</code> - Inhalt aktualisieren (benötigt Sync-Token)</li>
                 <li><code>DELETE /api/content/:id</code> - Inhalt löschen (benötigt Sync-Token)</li>
               </ul>
-              
+
               <h3>Mängelmeldungen API</h3>
               <ul className="endpoint-list">
                 <li><code>GET /api/maengel</code> - Alle Mängelmeldungen abrufen</li>
@@ -2481,7 +2480,7 @@ const SettingsContent = () => {
                 <li><code>PUT /api/maengel/:id</code> - Mängelmeldung aktualisieren (benötigt Sync-Token)</li>
                 <li><code>DELETE /api/maengel/:id</code> - Mängelmeldung löschen (benötigt Sync-Token)</li>
               </ul>
-              
+
               <h3>Synchronisierungs-API</h3>
               <ul className="endpoint-list">
                 <li><code>GET /api/sync/status</code> - Status der Synchronisierung abrufen</li>
@@ -2489,7 +2488,7 @@ const SettingsContent = () => {
               </ul>
             </div>
           </div>
-          
+
           <div className="settings-section">
             <h2>CityHub-App Details</h2>
             <div className="app-details">
@@ -2517,7 +2516,7 @@ const SettingsContent = () => {
               Verwalten Sie die Kategorien und Unterkategorien für den Mängelmelder. Diese Kategorien werden in der App zur Verfügung gestellt.
             </p>
           </div>
-          
+
           <div className="categories-manager">
             {categories.map(category => (
               <div key={category.id} className="category-item">
@@ -2550,7 +2549,7 @@ const SettingsContent = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 {category.isExpanded && (
                   <div className="subcategories-list">
                     {category.subCategories.map(subCategory => (
@@ -2577,7 +2576,7 @@ const SettingsContent = () => {
                         </div>
                       </div>
                     ))}
-                    
+
                     <div className="add-subcategory">
                       <button 
                         className="add-button"
@@ -2591,7 +2590,7 @@ const SettingsContent = () => {
                 )}
               </div>
             ))}
-            
+
             <div className="add-category">
               <button 
                 className="add-category-button"
@@ -2601,7 +2600,7 @@ const SettingsContent = () => {
                 Hinzufügen
               </button>
             </div>
-            
+
             <div className="save-categories">
               <button 
                 className="save-categories-button"
@@ -2610,14 +2609,14 @@ const SettingsContent = () => {
                 Speichern
               </button>
             </div>
-            
+
             {saveStatus.message && (
               <div className={`status-message ${saveStatus.type}`}>
                 {saveStatus.message}
               </div>
             )}
           </div>
-          
+
           {/* Edit Modal */}
           {editMode.isEditing && (
             <div className="modal-overlay">
@@ -2708,6 +2707,8 @@ const WasteCalendarContent = () => {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [isEditingItem, setIsEditingItem] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [filterRegion, setFilterRegion] = useState('all');
+  const [filterWasteType, setFilterWasteType] = useState('all');
 
   // Status für Regionen, Abfallarten und Abholtermine
   const [regions, setRegions] = useState([
@@ -2800,7 +2801,7 @@ const WasteCalendarContent = () => {
   // Formular-Handler
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (type === 'checkbox') {
       setFormData({ ...formData, [name]: checked });
     } else if (name === 'date') {
@@ -2834,9 +2835,9 @@ const WasteCalendarContent = () => {
         type === 'wasteType' ? wasteTypes.map(w => w.id) : 
         schedules.map(s => s.id)
       )) + 1;
-      
+
       const newItem = { ...formData, id: newId };
-      
+
       if (type === 'region') {
         setRegions([...regions, newItem]);
       } else if (type === 'wasteType') {
@@ -2845,7 +2846,7 @@ const WasteCalendarContent = () => {
         setSchedules([...schedules, newItem]);
       }
     }
-    
+
     // Formular zurücksetzen
     resetForm();
   };
@@ -2897,7 +2898,7 @@ const WasteCalendarContent = () => {
     setSchedules(schedules.map(schedule => 
       schedule.id === scheduleId ? { ...schedule, notificationSent: true } : schedule
     ));
-    
+
     alert(`Benachrichtigung für Abholtermin #${scheduleId} wurde gesendet.`);
   };
 
@@ -2915,7 +2916,7 @@ const WasteCalendarContent = () => {
       newDate.setMonth(newDate.getMonth() - 1);
       setSelectedDate(newDate);
     };
-    
+
     const nextMonth = () => {
       const newDate = new Date(selectedDate);
       newDate.setMonth(newDate.getMonth() + 1);
@@ -2924,40 +2925,40 @@ const WasteCalendarContent = () => {
 
     // Kalender-Header mit Monatsbezeichnung
     const monthName = selectedDate.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
-    
+
     // Tage im Monat berechnen
     const daysInMonth = new Date(
       selectedDate.getFullYear(),
       selectedDate.getMonth() + 1,
       0
     ).getDate();
-    
+
     // Wochentag des ersten Tags im Monat (0 = Sonntag, 1 = Montag, ...)
     let firstDayOfMonth = new Date(
       selectedDate.getFullYear(),
       selectedDate.getMonth(),
       1
     ).getDay();
-    
+
     // In Deutschland beginnt die Woche mit Montag, daher Anpassung
     firstDayOfMonth = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-    
+
     // Kalender-Tage erstellen
     const calendarDays = [];
     for (let i = 0; i < firstDayOfMonth; i++) {
       calendarDays.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
     }
-    
+
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
-      
+
       // Abholtermine für diesen Tag finden
       const daySchedules = schedules.filter(schedule => 
         schedule.date.getDate() === day &&
         schedule.date.getMonth() === currentDate.getMonth() &&
         schedule.date.getFullYear() === currentDate.getFullYear()
       );
-      
+
       calendarDays.push(
         <div key={`day-${day}`} className={`calendar-day ${daySchedules.length > 0 ? 'has-schedules' : ''}`}>
           <div className="day-number">{day}</div>
@@ -2985,7 +2986,7 @@ const WasteCalendarContent = () => {
           <h3>{monthName}</h3>
           <button onClick={nextMonth} className="calendar-nav-btn">▶</button>
         </div>
-        
+
         <div className="calendar-weekdays">
           <div>Mo</div>
           <div>Di</div>
@@ -2995,7 +2996,7 @@ const WasteCalendarContent = () => {
           <div>Sa</div>
           <div>So</div>
         </div>
-        
+
         <div className="calendar-grid">
           {calendarDays}
         </div>
@@ -3325,7 +3326,7 @@ const WasteCalendarContent = () => {
               <div className="table-body">
                 {schedules.map(schedule => {
                   const wasteType = getWasteTypeInfo(schedule.wasteTypeId);
-                  
+
                   return (
                     <div className="table-row" key={schedule.id}>
                       <div className="column-20">{getRegionName(schedule.regionId)}</div>
