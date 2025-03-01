@@ -153,283 +153,293 @@ const DashboardContent = () => {
   );
 };
 
-// App-Verwaltungskomponente
+// Startseiten-Bearbeitungskomponente
 const AppsManagementContent = () => {
-  const [appContents, setAppContents] = useState<AppContent[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [editingApp, setEditingApp] = useState<AppContent | null>(null);
-  const [formData, setFormData] = useState<AppContent>({
-    title: '',
-    description: '',
-    iconName: 'map',
-    color: '#4CAF50',
-    route: '',
-    order: 0,
-    isActive: true,
-    createdById: 1
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Apps beim ersten Laden holen
-  useEffect(() => {
-    fetchApps();
-  }, []);
-
-  // Apps von der API holen
-  const fetchApps = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await adminService.getContents();
-      setAppContents(response);
-    } catch (err) {
-      console.error('Fehler beim Laden der Apps:', err);
-      setError('Fehler beim Laden der Apps. Bitte versuchen Sie es später erneut.');
-    } finally {
-      setIsLoading(false);
+  // Staat für die Zeilen der Startseite
+  const [startseiteZeilen, setStartseiteZeilen] = useState([
+    { 
+      id: 1, 
+      typ: 'Auftritt-Kategorie', 
+      titel: 'Rathaus Kasendorf', 
+      kategorieId: '1234',
+      bild: 'https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=600',
+      position: 1
+    },
+    { 
+      id: 2, 
+      typ: 'Auftritt-Kategorie', 
+      titel: 'Sonnentempel', 
+      kategorieId: '1234',
+      bild: 'https://images.unsplash.com/photo-1594284937520-e27ea0a16fb9?q=80&w=600',
+      position: 2
     }
+  ]);
+
+  // Status für die aktive Bearbeitungszeile
+  const [aktiveZeile, setAktiveZeile] = useState(1);
+  // Status für das Hinzufügen einer neuen Zeile
+  const [isAddingZeile, setIsAddingZeile] = useState(false);
+  
+  // Zeile hinzufügen
+  const addZeile = () => {
+    const neueZeileId = Math.max(...startseiteZeilen.map(zeile => zeile.id), 0) + 1;
+    const neueZeile = {
+      id: neueZeileId,
+      typ: 'Auftritt-Kategorie',
+      titel: 'Neue Zeile',
+      kategorieId: '',
+      bild: '',
+      position: startseiteZeilen.length + 1
+    };
+    setStartseiteZeilen([...startseiteZeilen, neueZeile]);
+    setAktiveZeile(neueZeileId);
   };
 
-  // App erstellen
-  const createApp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      if (editingApp && editingApp.id) {
-        await adminService.updateContent(editingApp.id.toString(), formData);
-      } else {
-        await adminService.createContent(formData);
-      }
-
-      await fetchApps();
-      setIsModalOpen(false);
-      resetForm();
-    } catch (err) {
-      console.error('Fehler beim Speichern der App:', err);
-      setError('Fehler beim Speichern. Bitte versuchen Sie es später erneut.');
-    } finally {
-      setIsLoading(false);
-    }
+  // Zeile bearbeiten
+  const updateZeile = (id, daten) => {
+    setStartseiteZeilen(startseiteZeilen.map(zeile => 
+      zeile.id === id ? {...zeile, ...daten} : zeile
+    ));
   };
 
-  // App löschen
-  const deleteApp = async (id: number) => {
-    if (window.confirm('Möchten Sie diese App wirklich löschen?')) {
-      try {
-        setIsLoading(true);
-        setError(null);
+  // Zeile löschen
+  const deleteZeile = (id) => {
+    if (window.confirm('Möchten Sie diese Zeile wirklich löschen?')) {
+      const aktualisierteListe = startseiteZeilen.filter(zeile => zeile.id !== id);
+      
+      // Position neu nummerieren
+      const neuNummeriert = aktualisierteListe.map((zeile, index) => ({
+        ...zeile,
+        position: index + 1
+      }));
 
-        await adminService.deleteContent(id.toString());
-        await fetchApps();
-      } catch (err) {
-        console.error('Fehler beim Löschen der App:', err);
-        setError('Fehler beim Löschen. Bitte versuchen Sie es später erneut.');
-      } finally {
-        setIsLoading(false);
+      setStartseiteZeilen(neuNummeriert);
+      
+      // Wenn die aktive Zeile gelöscht wurde, ersten Eintrag oder null setzen
+      if (aktiveZeile === id) {
+        setAktiveZeile(neuNummeriert.length > 0 ? neuNummeriert[0].id : null);
       }
     }
   };
 
-  // Modal zum Bearbeiten/Erstellen öffnen
-  const openEditModal = (app: AppContent | null) => {
-    if (app) {
-      setEditingApp(app);
-      setFormData({...app});
-    } else {
-      setEditingApp(null);
-      resetForm();
-    }
-    setIsModalOpen(true);
-  };
-
-  // Formular zurücksetzen
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      description: '',
-      iconName: 'map',
-      color: '#4CAF50',
-      route: '',
-      order: appContents.length,
-      isActive: true,
-      createdById: 1
+  // Zeile nach oben verschieben
+  const moveZeileUp = (id) => {
+    const index = startseiteZeilen.findIndex(zeile => zeile.id === id);
+    if (index <= 0) return;
+    
+    const neueZeilen = [...startseiteZeilen];
+    [neueZeilen[index-1], neueZeilen[index]] = [neueZeilen[index], neueZeilen[index-1]];
+    
+    // Position aktualisieren
+    neueZeilen.forEach((zeile, i) => {
+      zeile.position = i + 1;
     });
+    
+    setStartseiteZeilen(neueZeilen);
   };
 
-  // Input-Änderung verarbeiten
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
+  // Zeile nach unten verschieben
+  const moveZeileDown = (id) => {
+    const index = startseiteZeilen.findIndex(zeile => zeile.id === id);
+    if (index >= startseiteZeilen.length - 1) return;
+    
+    const neueZeilen = [...startseiteZeilen];
+    [neueZeilen[index], neueZeilen[index+1]] = [neueZeilen[index+1], neueZeilen[index]];
+    
+    // Position aktualisieren
+    neueZeilen.forEach((zeile, i) => {
+      zeile.position = i + 1;
+    });
+    
+    setStartseiteZeilen(neueZeilen);
+  };
 
-    if (type === 'checkbox') {
-      const checkbox = e.target as HTMLInputElement;
-      setFormData({
-        ...formData,
-        [name]: checkbox.checked
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
+  // Aktuelle Bearbeitungszeile
+  const aktuelleZeile = startseiteZeilen.find(zeile => zeile.id === aktiveZeile) || null;
+
+  // Bilder für die Vorschau (als Platzhalter)
+  const vorschauBilder = {
+    willkommen: "https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=300",
+    müllkalender: "https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=300",
+    rathaus: "https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=300",
+    veranstaltungen: "https://images.unsplash.com/photo-1594284937520-e27ea0a16fb9?q=80&w=300"
+  };
+
+  // Bildeingabe-Handler
+  const handleBildUpload = (id) => {
+    // In einer echten App würde hier ein Datei-Upload stattfinden
+    const beispielBilder = [
+      'https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=600',
+      'https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=600',
+      'https://images.unsplash.com/photo-1594284937520-e27ea0a16fb9?q=80&w=600'
+    ];
+    
+    const zufallsBild = beispielBilder[Math.floor(Math.random() * beispielBilder.length)];
+    updateZeile(id, { bild: zufallsBild });
+  };
+
+  // Handler für Input-Änderungen
+  const handleChange = (e, id) => {
+    const { name, value } = e.target;
+    updateZeile(id, { [name]: value });
   };
 
   return (
-    <div className="apps-content">
-      <div className="apps-header">
-        <h1>Startbildschirm</h1>
-        <button className="add-btn" onClick={() => openEditModal(null)}>
+    <div className="startseite-content">
+      <div className="startseite-header">
+        <h1>Startseite Bearbeiten</h1>
+        <button className="add-btn" onClick={addZeile}>
           <Plus size={16} />
-          Neue App
+          Neue Zeile
         </button>
       </div>
 
-      {error && (
-        <div className="error-message">
-          <p>{error}</p>
-          <button onClick={() => setError(null)}>Schließen</button>
-        </div>
-      )}
-
-      {isLoading && <div className="loading">Daten werden geladen...</div>}
-
-      <div className="apps-grid">
-        {appContents.map((app) => (
-          <div key={app.id} className="app-card" style={{ borderTop: `3px solid ${app.color}` }}>
-            <div className="app-header">
-              <h3>{app.title}</h3>
-              <div className="app-badge" style={{ background: app.isActive ? '#4CAF50' : '#757575' }}>
-                {app.isActive ? 'Aktiv' : 'Inaktiv'}
+      <div className="startseite-grid">
+        <div className="startseite-zeilen">
+          {startseiteZeilen.map((zeile) => (
+            <div key={zeile.id} 
+                 className={`startseite-zeile ${aktiveZeile === zeile.id ? 'active' : ''}`}
+                 onClick={() => setAktiveZeile(zeile.id)}>
+              <div className="zeile-header">
+                <span className="zeile-nummer">Zeile {zeile.position}</span>
+                <div className="zeile-actions">
+                  <button className="action-btn" onClick={(e) => { e.stopPropagation(); moveZeileUp(zeile.id); }}>
+                    <span>▲</span>
+                  </button>
+                  <button className="action-btn" onClick={(e) => { e.stopPropagation(); moveZeileDown(zeile.id); }}>
+                    <span>▼</span>
+                  </button>
+                  <button className="action-btn delete" onClick={(e) => { e.stopPropagation(); deleteZeile(zeile.id); }}>
+                    <Trash size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="zeile-info">
+                <span className="zeile-typ">{zeile.typ}</span>
+                <span className="zeile-titel">{zeile.titel}</span>
               </div>
             </div>
-            <p className="app-description">{app.description}</p>
-            <div className="app-details">
-              <span className="app-route">/{app.route}</span>
-              <span className="app-order">Reihenfolge: {app.order}</span>
-            </div>
-            <div className="app-actions">
-              <button className="edit-btn" onClick={() => openEditModal(app)}>
-                <Edit size={16} />
-                Bearbeiten
-              </button>
-              <button className="delete-btn" onClick={() => deleteApp(app.id)}>
-                <Trash size={16} />
-                Löschen
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">
-              <h2>{editingApp ? 'App bearbeiten' : 'Neue App erstellen'}</h2>
-              <button className="close-btn" onClick={() => setIsModalOpen(false)}>
-                <X size={20} />
-              </button>
-            </div>
-            <form onSubmit={createApp}>
+        <div className="startseite-editor">
+          {aktuelleZeile && (
+            <div className="zeile-editor">
+              <h3>Zeile {aktuelleZeile.position}</h3>
+              
               <div className="form-group">
-                <label htmlFor="title">Titel</label>
-                <input
+                <label>Typ:</label>
+                <select 
+                  name="typ"
+                  value={aktuelleZeile.typ}
+                  onChange={(e) => handleChange(e, aktuelleZeile.id)}
+                  className="input-dropdown"
+                >
+                  <option value="Mehrfachzeile">Mehrfachzeile</option>
+                  <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
+                  <option value="News">News</option>
+                  <option value="Text">Text</option>
+                </select>
+              </div>
+
+              <div className="form-group mt-3">
+                <label>Spalten:</label>
+                <div className="spalten-anzahl">2</div>
+              </div>
+
+              <div className="form-group mt-3">
+                <label>Typ:</label>
+                <select 
+                  name="typ"
+                  value="Auftritt-Kategorie"
+                  onChange={(e) => {}}
+                  className="input-dropdown"
+                >
+                  <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Titel:</label>
+                <input 
                   type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  required
+                  name="titel"
+                  value={aktuelleZeile.titel}
+                  onChange={(e) => handleChange(e, aktuelleZeile.id)}
+                  placeholder="Titel eingeben"
+                  className="input-text"
                 />
               </div>
+
               <div className="form-group">
-                <label htmlFor="description">Beschreibung</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                ></textarea>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="iconName">Icon</label>
-                  <select 
-                    id="iconName" 
-                    name="iconName" 
-                    value={formData.iconName}
-                    onChange={handleInputChange}
-                  >
-                    <option value="map">Karte</option>
-                    <option value="calendar">Kalender</option>
-                    <option value="info">Info</option>
-                    <option value="settings">Einstellungen</option>
-                    <option value="user">Benutzer</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="color">Farbe</label>
-                  <input
-                    type="color"
-                    id="color"
-                    name="color"
-                    value={formData.color}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="route">Route</label>
-                  <input
-                    type="text"
-                    id="route"
-                    name="route"
-                    value={formData.route}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="order">Reihenfolge</label>
-                  <input
-                    type="number"
-                    id="order"
-                    name="order"
-                    value={formData.order}
-                    onChange={handleInputChange}
-                    min="0"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="form-group checkbox-group">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  name="isActive"
-                  checked={formData.isActive}
-                  onChange={handleInputChange}
+                <label>Auftritt-Kategorie-ID:</label>
+                <input 
+                  type="text"
+                  name="kategorieId"
+                  value={aktuelleZeile.kategorieId}
+                  onChange={(e) => handleChange(e, aktuelleZeile.id)}
+                  placeholder="ID eingeben"
+                  className="input-text"
                 />
-                <label htmlFor="isActive">Aktiv</label>
               </div>
-              <div className="form-actions">
-                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>
-                  Abbrechen
-                </button>
-                <button type="submit" className="save-btn" disabled={isLoading}>
-                  {isLoading ? 'Wird gespeichert...' : 'Speichern'}
-                </button>
+
+              <div className="form-group">
+                <label>Bild:</label>
+                <div className="bild-upload">
+                  {aktuelleZeile.bild ? (
+                    <div className="bild-preview">
+                      <img src={aktuelleZeile.bild} alt={aktuelleZeile.titel} />
+                      <button 
+                        className="bild-change-btn"
+                        onClick={() => handleBildUpload(aktuelleZeile.id)}
+                      >
+                        Bild ändern
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      className="bild-upload-btn"
+                      onClick={() => handleBildUpload(aktuelleZeile.id)}
+                    >
+                      Bild auswählen
+                    </button>
+                  )}
+                </div>
               </div>
-            </form>
+            </div>
+          )}
+        </div>
+
+        <div className="startseite-vorschau">
+          <h3>Vorschau</h3>
+          <div className="phone-mockup">
+            <div className="phone-header">
+              <div className="phone-notch"></div>
+            </div>
+            <div className="phone-content">
+              <div className="phone-status-bar">Mittelpunkt Oberfranken</div>
+              <div className="phone-grid">
+                <div className="app-kachel willkommen">
+                  <img src={vorschauBilder.willkommen} alt="Willkommen" />
+                  <span className="kachel-titel">Willkommen</span>
+                </div>
+                <div className="app-kachel muellkalender">
+                  <img src={vorschauBilder.müllkalender} alt="Müllkalender" />
+                  <span className="kachel-titel">Müllkalender</span>
+                </div>
+                <div className="app-kachel rathaus">
+                  <img src={vorschauBilder.rathaus} alt="Rathaus" />
+                  <span className="kachel-titel">Bürgerbüro</span>
+                </div>
+                <div className="app-kachel veranstaltungen">
+                  <img src={vorschauBilder.veranstaltungen} alt="Veranstaltungen" />
+                  <span className="kachel-titel">Veranstaltungen</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

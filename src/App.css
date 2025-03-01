@@ -743,6 +743,284 @@
   font-size: 16px;
 }
 
+/* Startseiten-Editor Styling */
+.startseite-content {
+  padding: 30px;
+  flex: 1;
+}
+
+.startseite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.startseite-header h1 {
+  margin-bottom: 0;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.startseite-grid {
+  display: grid;
+  grid-template-columns: 250px 1fr 1fr;
+  gap: 20px;
+}
+
+.startseite-zeilen {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 10px;
+  height: calc(100vh - 130px);
+  overflow-y: auto;
+}
+
+.startseite-zeile {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.startseite-zeile:hover {
+  background: #f9f9f9;
+}
+
+.startseite-zeile.active {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.05);
+}
+
+.zeile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.zeile-nummer {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.zeile-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.zeile-actions .action-btn {
+  width: 24px;
+  height: 24px;
+  background: #f1f5f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.zeile-actions .action-btn:hover {
+  background: #e2e8f0;
+}
+
+.zeile-actions .action-btn.delete:hover {
+  background: #feecf0;
+  color: #e74c3c;
+}
+
+.zeile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.zeile-typ {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.zeile-titel {
+  font-size: 14px;
+  margin-top: 3px;
+}
+
+.startseite-editor {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 20px;
+  height: calc(100vh - 130px);
+  overflow-y: auto;
+}
+
+.zeile-editor h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.input-dropdown, .input-text {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.spalten-anzahl {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f9f9f9;
+  color: #2c3e50;
+}
+
+.mt-3 {
+  margin-top: 15px;
+}
+
+.bild-upload {
+  margin-top: 5px;
+}
+
+.bild-preview {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.bild-preview img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.bild-change-btn, .bild-upload-btn {
+  padding: 8px 12px;
+  background: #f1f5f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.bild-change-btn:hover, .bild-upload-btn:hover {
+  background: #e2e8f0;
+}
+
+.startseite-vorschau {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  height: calc(100vh - 130px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.startseite-vorschau h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.phone-mockup {
+  width: 280px;
+  height: 550px;
+  background: #fff;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+  border: 8px solid #333;
+  position: relative;
+}
+
+.phone-header {
+  height: 25px;
+  background: #000;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.phone-notch {
+  width: 120px;
+  height: 25px;
+  background: #000;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+.phone-content {
+  height: calc(100% - 25px);
+  background: #f5f5f5;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-status-bar {
+  text-align: center;
+  background: #f8f8f8;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.phone-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+.app-kachel {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  height: 120px;
+}
+
+.app-kachel img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+}
+
+.kachel-titel {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
 /* Grundlegendes Reset und Layout */
 * {
   box-sizing: border-box;
