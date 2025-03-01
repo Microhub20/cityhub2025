@@ -23,9 +23,13 @@
   "dependencies": {
     "@types/leaflet": "^1.9.16",
     "axios": "^1.8.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.0",
     "leaflet": "^1.9.4",
-    "lucide-react": "^0.477.0"
+    "lucide-react": "^0.477.0",
+    "morgan": "^1.10.0"
   }
 }

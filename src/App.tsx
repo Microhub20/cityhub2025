@@ -1846,38 +1846,110 @@ const ArticleEditorContent = ({ item, onClose }) => {
 
 // Einstellungen-Komponente
 const SettingsContent = () => {
-  const [apiID, setApiID] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [syncToken, setSyncToken] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState({
+    isConnected: false,
+    message: 'Nicht verbunden'
+  });
 
   // Lädt die API-ID beim Initialisieren
   useEffect(() => {
-    // Hier würde in einer echten Implementierung die API-ID aus dem Backend geladen werden
-    // Für diese Demo verwenden wir einen festen Wert oder speichern im localStorage
-    const savedApiID = localStorage.getItem('githubSyncApiID') || '';
-    setApiID(savedApiID);
+    // Aus dem localStorage laden
+    const savedApiKey = localStorage.getItem('cityhubApiKey') || '';
+    setApiKey(savedApiKey);
+    
+    // Wenn ein API-Key vorhanden ist, Status prüfen
+    if (savedApiKey) {
+      verifyApiKey(savedApiKey);
+    }
   }, []);
 
+  // API-Key überprüfen
+  const verifyApiKey = async (key) => {
+    setIsVerifying(true);
+    
+    try {
+      // Simulierter API-Call für Demo
+      // In einer echten Implementation würde hier ein echter Fetch-Request stehen
+      // const response = await fetch('/api/auth/verify', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ apiKey: key })
+      // });
+      // const data = await response.json();
+      
+      // Simulierte Antwort (Demo)
+      const isValid = key === 'test-api-key-123' || key === 'app-api-key-456';
+      
+      // Sync-Token generieren
+      if (isValid) {
+        generateSyncToken(key);
+        setConnectionStatus({
+          isConnected: true,
+          message: 'Verbunden mit CityHub API'
+        });
+      } else {
+        setConnectionStatus({
+          isConnected: false,
+          message: 'Verbindung fehlgeschlagen: Ungültiger API-Key'
+        });
+      }
+      
+    } catch (error) {
+      console.error('Fehler bei der API-Key Verifizierung:', error);
+      setConnectionStatus({
+        isConnected: false,
+        message: 'Verbindung fehlgeschlagen: Netzwerkfehler'
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // Sync-Token generieren
+  const generateSyncToken = async (key) => {
+    try {
+      // Simulierter API-Call für Demo
+      // const response = await fetch('/api/auth/sync-token', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ apiKey: key })
+      // });
+      // const data = await response.json();
+      
+      // Simulierte Antwort (Demo)
+      const mockedToken = Buffer.from(`1:${Date.now()}`).toString('base64');
+      setSyncToken(mockedToken);
+      
+    } catch (error) {
+      console.error('Fehler beim Generieren des Sync-Tokens:', error);
+    }
+  };
+
   // Speichert die API-ID
-  const saveApiID = () => {
+  const saveApiKey = () => {
     setIsSaving(true);
     
-    // Simuliere API-Call
+    // Im localStorage speichern
+    localStorage.setItem('cityhubApiKey', apiKey);
+    
+    // API-Key verifizieren
+    verifyApiKey(apiKey);
+    
+    setSaveStatus({
+      type: 'success',
+      message: 'API-Key erfolgreich gespeichert'
+    });
+    
+    // Status-Nachricht nach 3 Sekunden ausblenden
     setTimeout(() => {
-      // Speichere im localStorage für die Demo
-      localStorage.setItem('githubSyncApiID', apiID);
-      
+      setSaveStatus({ type: '', message: '' });
       setIsSaving(false);
-      setSaveStatus({
-        type: 'success',
-        message: 'API-ID erfolgreich gespeichert'
-      });
-      
-      // Status-Nachricht nach 3 Sekunden ausblenden
-      setTimeout(() => {
-        setSaveStatus({ type: '', message: '' });
-      }, 3000);
-    }, 800);
+    }, 3000);
   };
 
   return (
@@ -1889,19 +1961,22 @@ const SettingsContent = () => {
       <div className="settings-section">
         <h2>API-Konfiguration</h2>
         <p className="settings-description">
-          Geben Sie Ihre GithubSync API-ID ein, um diesen Admin mit der entsprechenden App zu verknüpfen.
+          Geben Sie Ihren CityHub API-Key ein, um diesen Admin mit der entsprechenden App zu verknüpfen.
         </p>
         
         <div className="form-group">
-          <label htmlFor="api-id">GithubSync API-ID</label>
+          <label htmlFor="api-key">CityHub API-Key</label>
           <input
             type="text"
-            id="api-id"
-            value={apiID}
-            onChange={(e) => setApiID(e.target.value)}
-            placeholder="Geben Sie Ihre API-ID ein"
+            id="api-key"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Geben Sie Ihren API-Key ein"
             className="settings-input"
           />
+          <small className="settings-hint">
+            Demo API-Keys: "test-api-key-123" oder "app-api-key-456"
+          </small>
         </div>
         
         {saveStatus.message && (
@@ -1913,10 +1988,10 @@ const SettingsContent = () => {
         <div className="settings-actions">
           <button 
             className="save-settings-btn" 
-            onClick={saveApiID}
-            disabled={isSaving}
+            onClick={saveApiKey}
+            disabled={isSaving || isVerifying}
           >
-            {isSaving ? 'Wird gespeichert...' : 'Einstellungen speichern'}
+            {isSaving ? 'Wird gespeichert...' : isVerifying ? 'Wird überprüft...' : 'Einstellungen speichern'}
           </button>
         </div>
       </div>
@@ -1925,16 +2000,50 @@ const SettingsContent = () => {
         <h2>Verbindungsstatus</h2>
         <div className="connection-status">
           <div className="status-indicator">
-            <span className={`status-dot ${apiID ? 'connected' : 'disconnected'}`}></span>
+            <span className={`status-dot ${connectionStatus.isConnected ? 'connected' : 'disconnected'}`}></span>
             <span className="status-text">
-              {apiID ? 'Verbunden mit GithubSync' : 'Nicht verbunden'}
+              {connectionStatus.message}
             </span>
           </div>
-          {apiID && (
+          {connectionStatus.isConnected && apiKey && (
             <div className="api-id-display">
-              API-ID: {apiID.substring(0, 4)}...{apiID.substring(apiID.length - 4)}
+              API-Key: {apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
             </div>
           )}
+          
+          {syncToken && (
+            <div className="sync-token-info">
+              <h3>Sync-Token</h3>
+              <p>Dieses Token wird für Synchronisierungsvorgänge verwendet:</p>
+              <div className="token-display">
+                <code>{syncToken.substring(0, 12)}...{syncToken.substring(syncToken.length - 12)}</code>
+              </div>
+              <p className="token-expiry">Gültig für 60 Minuten</p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="settings-section">
+        <h2>API-Endpunkte</h2>
+        <div className="api-endpoints">
+          <h3>Content API</h3>
+          <ul className="endpoint-list">
+            <li><code>GET /api/content</code> - Alle Inhalte abrufen</li>
+            <li><code>GET /api/content/:id</code> - Einzelnen Inhalt abrufen</li>
+            <li><code>POST /api/content</code> - Neuen Inhalt erstellen (benötigt Sync-Token)</li>
+            <li><code>PUT /api/content/:id</code> - Inhalt aktualisieren (benötigt Sync-Token)</li>
+            <li><code>DELETE /api/content/:id</code> - Inhalt löschen (benötigt Sync-Token)</li>
+          </ul>
+          
+          <h3>Mängelmeldungen API</h3>
+          <ul className="endpoint-list">
+            <li><code>GET /api/maengel</code> - Alle Mängelmeldungen abrufen</li>
+            <li><code>GET /api/maengel/:id</code> - Einzelne Mängelmeldung abrufen</li>
+            <li><code>POST /api/maengel</code> - Neue Mängelmeldung erstellen (öffentlich)</li>
+            <li><code>PUT /api/maengel/:id</code> - Mängelmeldung aktualisieren (benötigt Sync-Token)</li>
+            <li><code>DELETE /api/maengel/:id</code> - Mängelmeldung löschen (benötigt Sync-Token)</li>
+          </ul>
         </div>
       </div>
     </div>

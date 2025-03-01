@@ -148,6 +148,82 @@
   display: inline-block;
 }
 
+.settings-hint {
+  display: block;
+  color: #7f8c8d;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.sync-token-info {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.sync-token-info h3 {
+  margin-top: 0;
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.token-display {
+  background: #f1f1f1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 10px 0;
+  overflow-x: auto;
+}
+
+.token-display code {
+  font-family: monospace;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.token-expiry {
+  font-size: 13px;
+  color: #e67e22;
+  margin-top: 5px;
+}
+
+.api-endpoints {
+  margin-top: 10px;
+}
+
+.api-endpoints h3 {
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.endpoint-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.endpoint-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.endpoint-list li:last-child {
+  border-bottom: none;
+}
+
+.endpoint-list code {
+  font-family: monospace;
+  background: #f1f1f1;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
 /* Menü-Editor Styling */
 .menu-editor-content {
   padding: 30px;
