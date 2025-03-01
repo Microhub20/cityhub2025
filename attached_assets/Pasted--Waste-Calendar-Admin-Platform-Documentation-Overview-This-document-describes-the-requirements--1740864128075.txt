@@ -1,0 +1,163 @@
+# Waste Calendar Admin Platform Documentation
+
+## Overview
+This document describes the requirements for building the admin platform that manages the waste collection calendar system. The admin platform should allow city officials to manage regions, waste types, and collection schedules.
+
+## Data Models
+
+### Regions (Stadtbezirke)
+- Manage different city regions/districts
+- Each region has:
+  - Name
+  - Description
+  - Active status
+
+### Waste Types (Müllarten)
+- Different types of waste collection
+- Each type has:
+  - Name (e.g., "Restmüll", "Biomüll", "Papier")
+  - Color (for visual distinction in the calendar)
+  - Description
+  - Active status
+
+### Collection Schedules (Abholtermine)
+- Schedule waste collection for specific regions
+- Each schedule entry has:
+  - Region ID
+  - Waste Type ID
+  - Collection Date
+  - Notification Status
+
+## Required Admin Features
+
+### 1. Region Management
+- CRUD operations for regions
+- Ability to activate/deactivate regions
+- Overview of all regions with their collection schedules
+
+### 2. Waste Type Management
+- CRUD operations for waste types
+- Color picker for visual distinction
+- Ability to activate/deactivate waste types
+
+### 3. Schedule Management
+- Bulk schedule creation (e.g., set recurring collection dates)
+- Calendar view of all schedules
+- Filter schedules by region and waste type
+- Export/import schedules (CSV format)
+
+### 4. Notification Management
+- Overview of active subscriptions per region/waste type
+- Manual trigger for notifications
+- Notification logs and statistics
+
+## API Integration
+
+### Endpoints to Implement
+
+1. Regions API:
+```typescript
+POST /api/regions
+GET /api/regions
+PUT /api/regions/:id
+DELETE /api/regions/:id
+```
+
+2. Waste Types API:
+```typescript
+POST /api/waste-types
+GET /api/waste-types
+PUT /api/waste-types/:id
+DELETE /api/waste-types/:id
+```
+
+3. Schedules API:
+```typescript
+POST /api/schedules
+GET /api/schedules
+PUT /api/schedules/:id
+DELETE /api/schedules/:id
+POST /api/schedules/bulk
+GET /api/schedules/export
+POST /api/schedules/import
+```
+
+### Authentication
+- Uses Bearer token authentication
+- Token should be configured via ADMIN_API_KEY environment variable
+- All admin API endpoints require authentication
+
+### API Response Format
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  metadata?: {
+    total?: number;
+    page?: number;
+    pageSize?: number;
+  };
+}
+```
+
+## User Interface Requirements
+
+### Dashboard
+- Overview statistics:
+  - Total regions
+  - Active waste types
+  - Upcoming collections
+  - Total subscribers
+
+### Schedule Calendar
+- Monthly/weekly view
+- Color-coded by waste type
+- Filter by region
+- Drag-and-drop scheduling
+
+### Data Import/Export
+- CSV template for bulk schedule import
+- Export functionality for schedules
+- Data validation and error reporting
+
+## Integration Testing
+
+To test the integration between the citizen app and admin platform:
+
+1. Create test data:
+   - Add a test region
+   - Add different waste types
+   - Create collection schedules
+
+2. Verify synchronization:
+   - Updates in admin should reflect in citizen app
+   - Subscription notifications should work
+   - Status updates should be tracked
+
+3. Test error handling:
+   - Invalid data formats
+   - Authentication failures
+   - Network issues
+
+## Security Considerations
+
+1. API Security:
+   - Rate limiting
+   - Input validation
+   - CORS configuration
+   - Audit logging
+
+2. Data Protection:
+   - No personal citizen data in admin interface
+   - Encryption for sensitive data
+   - Access control for admin users
+
+## Deployment
+
+The admin platform should be deployed as a separate Replit application with:
+- Its own database instance
+- Separate environment configuration
+- Independent scaling capabilities
+
+Remember to maintain API compatibility with the citizen app when making changes to the admin platform.
