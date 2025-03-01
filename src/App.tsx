@@ -276,7 +276,7 @@ const AppsManagementContent = () => {
   };
 
   // Bildeingabe-Handler
-  const handleBildUpload = (id) => {
+  const handleBildUpload = (id: number) => {
     // In einer echten App würde hier ein Datei-Upload stattfinden
     const beispielBilder = [
       'https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=600',
@@ -291,7 +291,7 @@ const AppsManagementContent = () => {
   // Handler für Input-Änderungen
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number) => {
     const { name, value } = e.target;
-    updateZeile(id, { [name]: value });
+    updateZeile(id, { [name]: value } as Partial<AppContent>);
   };
 
   return (
@@ -528,7 +528,7 @@ const MaengelContent = () => {
   });
 
   // Handler für das Öffnen des Bearbeitungsmodals
-  const openEditModal = (maengel) => {
+  const openEditModal = (maengel: any) => {
     setEditingMaengel(maengel);
     setMaengelFormData({
       ...maengel
@@ -568,7 +568,7 @@ const MaengelContent = () => {
   };
 
   // Handler für Änderungen an Formularfeldern
-  const handleMaengelFormChange = (e) => {
+  const handleMaengelFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
     // Wenn die Kategorie geändert wird, setze die Unterkategorie auf die erste verfügbare
@@ -603,7 +603,7 @@ const MaengelContent = () => {
   };
 
   // PDF Export-Funktion
-  const exportPDF = (maengel) => {
+  const exportPDF = (maengel: any) => {
     // PDF-Dokument erstellen
     const doc = new jsPDF();
 
@@ -1304,7 +1304,7 @@ const MenuEditorContent = () => {
 };
 
 // Artikeleditor-Komponente
-const ArticleEditorContent = ({ item, onClose }) => {
+const ArticleEditorContent = ({ item, onClose }: { item: any, onClose: () => void }) => {
   const [articleTitle, setArticleTitle] = useState(item.title || "");
   const [articleElements, setArticleElements] = useState([
     { id: 1, type: 'text', content: '', label: 'Zeile 1' },
