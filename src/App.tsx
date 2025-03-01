@@ -430,43 +430,49 @@ const MaengelContent = () => {
   const [maengelList, setMaengelList] = useState([
     {
       id: 1,
-      title: 'Straßenbeleuchtung defekt',
+      title: 'Prelitz - Straßenbeleuchtung defekt',
       image: 'https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=200',
-      status: 'offen',
+      status: 'aktiv',
+      location: 'Prelitz',
       createdAt: new Date('2023-06-15')
     },
     {
       id: 2,
-      title: 'Gullideckel verschmutzt',
+      title: 'Gulli verschmiert',
       image: 'https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=200',
-      status: 'in Bearbeitung',
+      status: 'aktiv',
+      location: 'Innenstadt',
       createdAt: new Date('2023-06-18')
     },
     {
       id: 3,
-      title: 'Regenschutz an der Bushaltestelle beschädigt',
+      title: 'Regenschutz an der Bushaltestelle Bahnhof / alt',
       image: 'https://images.unsplash.com/photo-1594284937520-e27ea0a16fb9?q=80&w=200',
-      status: 'erledigt',
+      status: 'aktiv',
+      location: 'Bahnhof',
       createdAt: new Date('2023-06-20')
     },
     {
       id: 4,
-      title: 'Zufahrt Sportplatz, Anwohner-Schutz',
+      title: 'Zufahrt Sportplatz, Anwohner Schutz',
       image: 'https://images.unsplash.com/photo-1484506176121-c919d361c432?q=80&w=200',
-      status: 'offen',
+      status: 'aktiv',
+      location: 'Sportplatz',
       createdAt: new Date('2023-06-22')
     }
   ]);
 
   return (
     <div className="maengel-content">
-      <h1>Mängelmeldungen</h1>
+      <div className="maengel-header">
+        <h1>Mängelmeldungen</h1>
+      </div>
       
       <div className="maengel-table">
-        <div className="maengel-header">
+        <div className="maengel-table-header">
           <div className="column-bild">Bild</div>
           <div className="column-titel">Titel</div>
-          <div className="column-status">Status</div>
+          <div className="column-aktiv">Aktiv</div>
           <div className="column-aktionen">Aktionen</div>
         </div>
         
@@ -476,18 +482,19 @@ const MaengelContent = () => {
               <img src={maengel.image} alt={maengel.title} className="maengel-image" />
             </div>
             <div className="column-titel">{maengel.title}</div>
-            <div className="column-status">
-              <span className={`status-badge status-${maengel.status.replace(' ', '-')}`}>
-                {maengel.status === 'offen' && <Check size={14} />}
-                {maengel.status}
-              </span>
+            <div className="column-aktiv">
+              {maengel.status === 'aktiv' && (
+                <div className="status-check">
+                  <Check size={18} color="#4CAF50" />
+                </div>
+              )}
             </div>
             <div className="column-aktionen">
-              <button className="action-btn edit">
-                <Edit size={16} />
+              <button className="action-btn edit" title="Bearbeiten">
+                <Edit size={18} />
               </button>
-              <button className="action-btn delete">
-                <Trash size={16} />
+              <button className="action-btn delete" title="Löschen">
+                <Trash size={18} />
               </button>
             </div>
           </div>
