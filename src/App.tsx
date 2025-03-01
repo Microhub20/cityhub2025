@@ -159,7 +159,7 @@ const AppsManagementContent = () => {
   const [startseiteZeilen, setStartseiteZeilen] = useState([
     { 
       id: 1, 
-      typ: 'Mehrfachzeile', 
+      typ: 'Mehrfachzelle', 
       subTyp: 'Auftritt-Kategorie',
       titel: 'Rathaus Kasendorf', 
       kategorieId: '1234',
@@ -169,7 +169,7 @@ const AppsManagementContent = () => {
     },
     { 
       id: 2, 
-      typ: 'Auftritt-Kategorie', 
+      typ: 'Einzelzelle', 
       subTyp: 'Auftritt-Kategorie',
       titel: 'Sonnentempel', 
       kategorieId: '1234',
@@ -339,49 +339,35 @@ const AppsManagementContent = () => {
                   onChange={(e) => handleChange(e, aktuelleZeile.id)}
                   className="input-dropdown"
                 >
-                  <option value="Mehrfachzeile">Mehrfachzeile</option>
-                  <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
-                  <option value="News">News</option>
-                  <option value="Text">Text</option>
+                  <option value="Einzelzelle">Einzelzelle</option>
+                  <option value="Doppelzelle">Doppelzelle</option>
+                  <option value="Mehrfachzelle">Mehrfachzelle</option>
                 </select>
               </div>
 
               <div className="form-group mt-3">
                 <label>Spalten:</label>
-                <div className="spalten-anzahl">2</div>
+                <div className="spalten-anzahl">
+                  {aktuelleZeile.typ === "Einzelzelle" ? "1" : 
+                   aktuelleZeile.typ === "Doppelzelle" ? "2" : "4"}
+                </div>
               </div>
 
-              {aktuelleZeile.typ === "Mehrfachzeile" && (
-                <div className="form-group mt-3">
-                  <label>Typ:</label>
-                  <select 
-                    name="subTyp"
-                    value={aktuelleZeile.subTyp || "Auftritt-Kategorie"}
-                    onChange={(e) => handleChange(e, aktuelleZeile.id)}
-                    className="input-dropdown"
-                  >
-                    <option value="Link">Link</option>
-                    <option value="Neue Mängelmeldung">Neue Mängelmeldung</option>
-                    <option value="Mängelmelder">Mängelmelder</option>
-                    <option value="Auftritt">Auftritt</option>
-                    <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
-                  </select>
-                </div>
-              )}
-
-              {aktuelleZeile.typ !== "Mehrfachzeile" && (
-                <div className="form-group mt-3">
-                  <label>Typ:</label>
-                  <select 
-                    name="subTyp"
-                    value={aktuelleZeile.subTyp || "Auftritt-Kategorie"}
-                    onChange={(e) => handleChange(e, aktuelleZeile.id)}
-                    className="input-dropdown"
-                  >
-                    <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
-                  </select>
-                </div>
-              )}
+              <div className="form-group mt-3">
+                <label>Typ:</label>
+                <select 
+                  name="subTyp"
+                  value={aktuelleZeile.subTyp || "Auftritt-Kategorie"}
+                  onChange={(e) => handleChange(e, aktuelleZeile.id)}
+                  className="input-dropdown"
+                >
+                  <option value="Link">Link</option>
+                  <option value="Neue Mängelmeldung">Neue Mängelmeldung</option>
+                  <option value="Mängelmelder">Mängelmelder</option>
+                  <option value="Auftritt">Auftritt</option>
+                  <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
+                </select>
+              </div>
 
               <div className="form-group">
                 <label>Titel:</label>
@@ -458,7 +444,10 @@ const AppsManagementContent = () => {
               <div className="phone-status-bar">Mittelpunkt Oberfranken</div>
               <div className="phone-grid">
                 {startseiteZeilen.map((zeile, index) => (
-                  <div key={zeile.id} className={`app-kachel kachel-${index} kachel-${zeile.subTyp?.toLowerCase() || ''}`}>
+                  <div 
+                    key={zeile.id} 
+                    className={`app-kachel ${zeile.typ.toLowerCase()} kachel-${index} kachel-${zeile.subTyp?.toLowerCase() || ''}`}
+                  >
                     {zeile.bild && <img src={zeile.bild} alt={zeile.titel} />}
                     <span className="kachel-titel">{zeile.titel}</span>
                     {zeile.subTyp === 'Link' && <small className="kachel-link-indicator">→</small>}
