@@ -40,6 +40,12 @@ const Sidebar = ({ activeView, setActiveView }) => {
               Apps verwalten
             </a>
           </li>
+          <li className={activeView === 'maengel' ? 'active' : ''}>
+            <a href="#maengel" onClick={() => setActiveView('maengel')}>
+              <FileEdit className="icon" size={18} />
+              Mängelmeldungen
+            </a>
+          </li>
           <li className={activeView === 'users' ? 'active' : ''}>
             <a href="#users" onClick={() => setActiveView('users')}>
               <User className="icon" size={18} />
@@ -419,6 +425,78 @@ const AppsManagementContent = () => {
   );
 };
 
+// Mängelmeldung-Komponente
+const MaengelContent = () => {
+  const [maengelList, setMaengelList] = useState([
+    {
+      id: 1,
+      title: 'Straßenbeleuchtung defekt',
+      image: 'https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=200',
+      status: 'offen',
+      createdAt: new Date('2023-06-15')
+    },
+    {
+      id: 2,
+      title: 'Gullideckel verschmutzt',
+      image: 'https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=200',
+      status: 'in Bearbeitung',
+      createdAt: new Date('2023-06-18')
+    },
+    {
+      id: 3,
+      title: 'Regenschutz an der Bushaltestelle beschädigt',
+      image: 'https://images.unsplash.com/photo-1594284937520-e27ea0a16fb9?q=80&w=200',
+      status: 'erledigt',
+      createdAt: new Date('2023-06-20')
+    },
+    {
+      id: 4,
+      title: 'Zufahrt Sportplatz, Anwohner-Schutz',
+      image: 'https://images.unsplash.com/photo-1484506176121-c919d361c432?q=80&w=200',
+      status: 'offen',
+      createdAt: new Date('2023-06-22')
+    }
+  ]);
+
+  return (
+    <div className="maengel-content">
+      <h1>Mängelmeldungen</h1>
+      
+      <div className="maengel-table">
+        <div className="maengel-header">
+          <div className="column-bild">Bild</div>
+          <div className="column-titel">Titel</div>
+          <div className="column-status">Status</div>
+          <div className="column-aktionen">Aktionen</div>
+        </div>
+        
+        {maengelList.map(maengel => (
+          <div key={maengel.id} className="maengel-row">
+            <div className="column-bild">
+              <img src={maengel.image} alt={maengel.title} className="maengel-image" />
+            </div>
+            <div className="column-titel">{maengel.title}</div>
+            <div className="column-status">
+              <span className={`status-badge status-${maengel.status.replace(' ', '-')}`}>
+                {maengel.status === 'offen' && <Check size={14} />}
+                {maengel.status}
+              </span>
+            </div>
+            <div className="column-aktionen">
+              <button className="action-btn edit">
+                <Edit size={16} />
+              </button>
+              <button className="action-btn delete">
+                <Trash size={16} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Benutzer-Verwaltungskomponente (Platzhalter)
 const UsersManagementContent = () => {
   return (
@@ -449,6 +527,8 @@ export default function App() {
         return <DashboardContent />;
       case 'apps':
         return <AppsManagementContent />;
+      case 'maengel':
+        return <MaengelContent />;
       case 'users':
         return <UsersManagementContent />;
       case 'settings':

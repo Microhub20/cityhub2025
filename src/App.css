@@ -510,3 +510,108 @@ body {
   background: #a0aec0;
   cursor: not-allowed;
 }
+
+/* Mängelmeldungen Styling */
+.maengel-content {
+  padding: 30px;
+  flex: 1;
+}
+
+.maengel-content h1 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.maengel-table {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.maengel-header {
+  display: grid;
+  grid-template-columns: 120px 1fr 150px 100px;
+  background: #f8f9fa;
+  padding: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.maengel-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 150px 100px;
+  padding: 15px;
+  align-items: center;
+  border-bottom: 1px solid #e9ecef;
+  transition: background 0.3s;
+}
+
+.maengel-row:hover {
+  background: #f8f9fa;
+}
+
+.maengel-image {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-offen {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-in-Bearbeitung {
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+  border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.status-erledigt {
+  background: rgba(120, 120, 120, 0.1);
+  color: #757575;
+  border: 1px solid rgba(120, 120, 120, 0.3);
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.action-btn.edit:hover {
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+}
+
+.action-btn.delete:hover {
+  background: rgba(244, 67, 54, 0.1);
+  color: #F44336;
+}
+
+.column-aktionen {
+  display: flex;
+  gap: 5px;
+}
