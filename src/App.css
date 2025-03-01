@@ -226,6 +226,8 @@
   cursor: pointer;
   position: relative;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
 }
 
 .element-item:hover {
@@ -237,15 +239,40 @@
   background: rgba(52, 152, 219, 0.05);
 }
 
+.element-item.dragging {
+  opacity: 0.5;
+  border: 1px dashed #3498db;
+}
+
+.element-item.drag-over {
+  border: 2px dashed #3498db;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #a0aec0;
+  margin-right: 10px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.element-item:hover .drag-handle {
+  color: #64748b;
+}
+
 .element-title {
   font-weight: 500;
   font-size: 14px;
   margin-bottom: 3px;
+  flex-grow: 1;
 }
 
 .element-type {
   font-size: 12px;
   color: #7f8c8d;
+  margin-right: 25px;
 }
 
 .remove-element-btn {
@@ -516,10 +543,16 @@
   color: #2c3e50;
 }
 
+.preview-elements-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .preview-element {
   margin-bottom: 15px;
   padding-bottom: 15px;
   border-bottom: 1px solid #eee;
+  width: 100%;
 }
 
 .preview-element:last-child {

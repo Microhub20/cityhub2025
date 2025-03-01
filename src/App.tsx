@@ -1219,6 +1219,8 @@ const ArticleEditorContent = ({ item, onClose }) => {
     { id: 2, type: 'image', content: '', label: 'Zeile 2' }
   ]);
   const [selectedElement, setSelectedElement] = useState(null);
+  const [draggedElement, setDraggedElement] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
   
   // Artikelelement hinzufügen
   const addArticleElement = (type) => {
@@ -1239,6 +1241,51 @@ const ArticleEditorContent = ({ item, onClose }) => {
     if (selectedElement && selectedElement.id === id) {
       setSelectedElement(null);
     }
+  };
+  
+  // Drag-and-Drop Funktionen
+  const handleDragStart = (e, element) => {
+    setDraggedElement(element);
+    e.currentTarget.classList.add('dragging');
+  };
+  
+  const handleDragEnd = (e) => {
+    e.currentTarget.classList.remove('dragging');
+    setDraggedElement(null);
+    setDragOverIndex(null);
+  };
+  
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedElement) {
+      setDragOverIndex(index);
+    }
+  };
+  
+  const handleDrop = (e, targetIndex) => {
+    e.preventDefault();
+    
+    if (!draggedElement) return;
+    
+    const sourceIndex = articleElements.findIndex(el => el.id === draggedElement.id);
+    if (sourceIndex === targetIndex) return;
+    
+    const newElements = [...articleElements];
+    
+    // Element an der Quellposition entfernen
+    const [removed] = newElements.splice(sourceIndex, 1);
+    
+    // Element an der Zielposition einfügen
+    newElements.splice(targetIndex, 0, removed);
+    
+    // Label-Nummern aktualisieren
+    newElements.forEach((el, idx) => {
+      el.label = `Zeile ${idx + 1}`;
+    });
+    
+    setArticleElements(newElements);
+    setDraggedElement(null);
+    setDragOverIndex(null);
   };
   
   // Artikelelement aktualisieren
@@ -1549,12 +1596,18 @@ const ArticleEditorContent = ({ item, onClose }) => {
           <div className="article-elements">
             <h3>Elemente</h3>
             <div className="element-list">
-              {articleElements.map(element => (
+              {articleElements.map((element, index) => (
                 <div 
                   key={element.id} 
-                  className={`element-item ${selectedElement?.id === element.id ? 'selected' : ''}`}
+                  className={`element-item ${selectedElement?.id === element.id ? 'selected' : ''} ${dragOverIndex === index ? 'drag-over' : ''}`}
                   onClick={() => setSelectedElement(element)}
+                  draggable="true"
+                  onDragStart={(e) => handleDragStart(e, element)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
                 >
+                  <div className="drag-handle">⋮⋮</div>
                   <div className="element-title">{element.label}</div>
                   <div className="element-type">Typ: {element.type}</div>
                   <button 
@@ -1671,87 +1724,89 @@ const ArticleEditorContent = ({ item, onClose }) => {
             <div className="preview-container">
               <h2 className="preview-title">{articleTitle || "Artikeltitel"}</h2>
               
-              {articleElements.map(element => (
-                <div key={element.id} className={`preview-element preview-${element.type}`}>
-                  {element.type === 'text' && (
-                    <div className="preview-text">
-                      {element.content ? element.content : <em>Text wird hier angezeigt...</em>}
-                    </div>
-                  )}
-                  
-                  {element.type === 'link' && (
-                    <div className="preview-link">
-                      {element.content ? (
-                        <a href={element.content} target="_blank" rel="noopener noreferrer" className="preview-link-item">
-                          {element.linkText || element.content}
-                        </a>
-                      ) : (
-                        <em>Link wird hier angezeigt...</em>
-                      )}
-                    </div>
-                  )}
-                  
-                  {element.type === 'image' && (
-                    <div className="preview-image">
-                      {element.content ? (
-                        <img src={element.content} alt="Bild" />
-                      ) : (
-                        <div className="image-placeholder-preview">Bild wird hier angezeigt</div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {element.type === 'file' && (
-                    <div className="preview-file">
-                      {element.fileName ? (
-                        <a href={element.content} className="file-download-link">
-                          <span className="file-icon">📄</span>
-                          <span className="file-name">{element.fileName}</span>
-                        </a>
-                      ) : (
-                        <em>Datei wird hier angezeigt...</em>
-                      )}
-                    </div>
-                  )}
-                  
-                  {element.type === 'email' && (
-                    <div className="preview-email">
-                      {element.content ? (
-                        <a href={`mailto:${element.content}`} className="email-link">
-                          <span className="email-icon">✉️</span>
-                          <span className="email-text">{element.emailText || element.content}</span>
-                        </a>
-                      ) : (
-                        <em>E-Mail wird hier angezeigt...</em>
-                      )}
-                    </div>
-                  )}
-                  
-                  {element.type === 'phone' && (
-                    <div className="preview-phone">
-                      {element.content ? (
-                        <a href={`tel:${element.content.replace(/\s/g, '')}`} className="phone-link">
-                          <span className="phone-icon">📞</span>
-                          <span className="phone-text">{element.phoneText || element.content}</span>
-                        </a>
-                      ) : (
-                        <em>Telefonnummer wird hier angezeigt...</em>
-                      )}
-                    </div>
-                  )}
-                  
-                  {element.type === 'date' && (
-                    <div className="preview-date">
-                      <h4>Termine:</h4>
-                      <ul>
-                        <li>Januar: 24.01.2025</li>
-                        <li>Februar: 07.02.2025 & 21.02.2025</li>
-                        <li>März: 07.03.2025 & 21.03.2025</li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              ))}
+              <div className="preview-elements-container">
+                {articleElements.map(element => (
+                  <div key={element.id} className={`preview-element preview-${element.type}`}>
+                    {element.type === 'text' && (
+                      <div className="preview-text">
+                        {element.content ? element.content : <em>Text wird hier angezeigt...</em>}
+                      </div>
+                    )}
+                    
+                    {element.type === 'link' && (
+                      <div className="preview-link">
+                        {element.content ? (
+                          <a href={element.content} target="_blank" rel="noopener noreferrer" className="preview-link-item">
+                            {element.linkText || element.content}
+                          </a>
+                        ) : (
+                          <em>Link wird hier angezeigt...</em>
+                        )}
+                      </div>
+                    )}
+                    
+                    {element.type === 'image' && (
+                      <div className="preview-image">
+                        {element.content ? (
+                          <img src={element.content} alt="Bild" />
+                        ) : (
+                          <div className="image-placeholder-preview">Bild wird hier angezeigt</div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {element.type === 'file' && (
+                      <div className="preview-file">
+                        {element.fileName ? (
+                          <a href={element.content} className="file-download-link">
+                            <span className="file-icon">📄</span>
+                            <span className="file-name">{element.fileName}</span>
+                          </a>
+                        ) : (
+                          <em>Datei wird hier angezeigt...</em>
+                        )}
+                      </div>
+                    )}
+                    
+                    {element.type === 'email' && (
+                      <div className="preview-email">
+                        {element.content ? (
+                          <a href={`mailto:${element.content}`} className="email-link">
+                            <span className="email-icon">✉️</span>
+                            <span className="email-text">{element.emailText || element.content}</span>
+                          </a>
+                        ) : (
+                          <em>E-Mail wird hier angezeigt...</em>
+                        )}
+                      </div>
+                    )}
+                    
+                    {element.type === 'phone' && (
+                      <div className="preview-phone">
+                        {element.content ? (
+                          <a href={`tel:${element.content.replace(/\s/g, '')}`} className="phone-link">
+                            <span className="phone-icon">📞</span>
+                            <span className="phone-text">{element.phoneText || element.content}</span>
+                          </a>
+                        ) : (
+                          <em>Telefonnummer wird hier angezeigt...</em>
+                        )}
+                      </div>
+                    )}
+                    
+                    {element.type === 'date' && (
+                      <div className="preview-date">
+                        <h4>Termine:</h4>
+                        <ul>
+                          <li>Januar: 24.01.2025</li>
+                          <li>Februar: 07.02.2025 & 21.02.2025</li>
+                          <li>März: 07.03.2025 & 21.03.2025</li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
