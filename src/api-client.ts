@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // API-Basisadresse
-const API_BASE_URL = 'http://localhost:3001/api'; // Im Produktionsbetrieb anpassen
+const API_BASE_URL = window.location.origin + '/api'; // Verwendet die aktuelle Domain
 
 // API-Client erstellen
 const createApiClient = () => {
