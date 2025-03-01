@@ -55,6 +55,12 @@ const Sidebar = ({ activeView, setActiveView }) => {
               Benutzer
             </a>
           </li>
+          <li className={activeView === 'menu' ? 'active' : ''}>
+            <a href="#menu" onClick={() => setActiveView('menu')}>
+              <FileEdit className="icon" size={18} />
+              Auftritte
+            </a>
+          </li>
           <li className={activeView === 'settings' ? 'active' : ''}>
             <a href="#settings" onClick={() => setActiveView('settings')}>
               <Settings className="icon" size={18} />
@@ -839,6 +845,351 @@ const UsersManagementContent = () => {
   );
 };
 
+// Menü-Editor-Komponente
+const MenuEditorContent = () => {
+  const [menuItems, setMenuItems] = useState([
+    { id: 259, title: 'Nachrichten', type: 'menu', isExpanded: false, order: 1 },
+    { id: 260, title: 'Müllkalender', type: 'menu', isExpanded: true, order: 2 },
+    { id: 264, title: 'Restmüll-Abfuhr', type: 'submenu', parentId: 260, order: 1 },
+    { id: 265, title: 'Papier', type: 'submenu', parentId: null, isExpanded: false, order: 3 },
+    { id: 266, title: 'Gelber Sack', type: 'submenu', parentId: null, isExpanded: false, order: 4 },
+    { id: 267, title: 'Abfuhrkalender / Abfall-App', type: 'submenu', parentId: null, isExpanded: false, order: 5 },
+    { id: 261, title: 'Ansprechpartner & Öffnungszeiten', type: 'menu', isExpanded: false, order: 6 },
+    { id: 275, title: 'Veranstaltungen', type: 'menu', isExpanded: false, order: 7 }
+  ]);
+  
+  const [editingItem, setEditingItem] = useState(null);
+  const [menuFormData, setMenuFormData] = useState({
+    id: null,
+    title: '',
+    type: 'menu',
+    parentId: null,
+    order: 0,
+    isExpanded: false
+  });
+  
+  // Menüeintrag verwalten
+  const handleAddItem = (type, parentId = null) => {
+    const newId = Math.max(...menuItems.map(item => item.id)) + 1;
+    const newOrder = menuItems.length + 1;
+    
+    const newItem = {
+      id: newId,
+      title: type === 'menu' ? 'Neuer Eintrag' : 'Neue Unterkategorie',
+      type,
+      parentId,
+      order: newOrder,
+      isExpanded: false
+    };
+    
+    setMenuItems([...menuItems, newItem]);
+    setEditingItem(newItem);
+    setMenuFormData({...newItem});
+  };
+  
+  // Menüeintrag bearbeiten
+  const handleEditItem = (item) => {
+    setEditingItem(item);
+    setMenuFormData({...item});
+  };
+  
+  // Menüeintrag entfernen
+  const handleDeleteItem = (itemId) => {
+    if (window.confirm('Möchten Sie diesen Menüeintrag wirklich löschen?')) {
+      // Alle abhängigen Untermenüs auch entfernen
+      const updatedItems = menuItems.filter(item => 
+        item.id !== itemId && item.parentId !== itemId
+      );
+      setMenuItems(updatedItems);
+    }
+  };
+  
+  // Menüeintrag speichern
+  const handleSaveItem = (e) => {
+    e.preventDefault();
+    
+    const updatedItems = menuItems.map(item => 
+      item.id === menuFormData.id ? {...menuFormData} : item
+    );
+    
+    setMenuItems(updatedItems);
+    setEditingItem(null);
+  };
+  
+  // Ein-/Ausklappen eines Menüpunkts
+  const toggleExpand = (itemId) => {
+    setMenuItems(menuItems.map(item => 
+      item.id === itemId ? {...item, isExpanded: !item.isExpanded} : item
+    ));
+  };
+  
+  // Nach oben verschieben
+  const moveItemUp = (itemId) => {
+    const itemIndex = menuItems.findIndex(item => item.id === itemId);
+    if (itemIndex <= 0) return;
+    
+    const currentItem = menuItems[itemIndex];
+    const prevItem = menuItems[itemIndex - 1];
+    
+    // Stelle sicher, dass wir nicht über Kategoriegrenzen verschieben
+    if (currentItem.parentId !== prevItem.parentId && currentItem.type === 'submenu') return;
+    
+    // Tausche Order-Werte
+    const updatedItems = menuItems.map(item => {
+      if (item.id === currentItem.id) {
+        return {...item, order: prevItem.order};
+      }
+      if (item.id === prevItem.id) {
+        return {...item, order: currentItem.order};
+      }
+      return item;
+    });
+    
+    setMenuItems(updatedItems.sort((a, b) => a.order - b.order));
+  };
+  
+  // Nach unten verschieben
+  const moveItemDown = (itemId) => {
+    const itemIndex = menuItems.findIndex(item => item.id === itemId);
+    if (itemIndex >= menuItems.length - 1) return;
+    
+    const currentItem = menuItems[itemIndex];
+    const nextItem = menuItems[itemIndex + 1];
+    
+    // Stelle sicher, dass wir nicht über Kategoriegrenzen verschieben
+    if (currentItem.parentId !== nextItem.parentId && currentItem.type === 'submenu') return;
+    
+    // Tausche Order-Werte
+    const updatedItems = menuItems.map(item => {
+      if (item.id === currentItem.id) {
+        return {...item, order: nextItem.order};
+      }
+      if (item.id === nextItem.id) {
+        return {...item, order: currentItem.order};
+      }
+      return item;
+    });
+    
+    setMenuItems(updatedItems.sort((a, b) => a.order - b.order));
+  };
+  
+  // Ändere Formularfelder
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setMenuFormData({
+      ...menuFormData,
+      [name]: value
+    });
+  };
+  
+  // Sortiere Menüeinträge für die Anzeige
+  const sortedMenuItems = [...menuItems].sort((a, b) => a.order - b.order);
+  
+  return (
+    <div className="menu-editor-content">
+      <div className="menu-editor-header">
+        <h1>Auftritte verwalten</h1>
+        <button className="add-btn" onClick={() => handleAddItem('menu')}>
+          <Plus size={16} />
+          Neuer Eintrag
+        </button>
+      </div>
+      
+      <div className="menu-list">
+        <div className="menu-title">Auftritte</div>
+        
+        {sortedMenuItems.map((item) => {
+          // Nur oberste Menüeinträge oder Untereinträge mit passendem parent anzeigen
+          if (item.type === 'menu') {
+            return (
+              <div key={item.id} className="menu-item">
+                <div className="menu-item-header">
+                  {item.isExpanded ? (
+                    <button className="toggle-btn" onClick={() => toggleExpand(item.id)}>
+                      <ChevronDown size={16} />
+                    </button>
+                  ) : (
+                    <button className="toggle-btn" onClick={() => toggleExpand(item.id)}>
+                      <ChevronDown size={16} style={{ transform: 'rotate(-90deg)' }} />
+                    </button>
+                  )}
+                  <span className="menu-item-title">{item.title}</span>
+                  <div className="menu-item-id">{item.id}</div>
+                  <div className="menu-item-actions">
+                    <button className="action-btn edit" onClick={() => handleEditItem(item)}>
+                      <Edit size={16} />
+                    </button>
+                    <button className="action-btn up" onClick={() => moveItemUp(item.id)}>
+                      <span>▲</span>
+                    </button>
+                    <button className="action-btn down" onClick={() => moveItemDown(item.id)}>
+                      <span>▼</span>
+                    </button>
+                    <button className="action-btn delete" onClick={() => handleDeleteItem(item.id)}>
+                      <Trash size={16} />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Zeige Untermenüs an, wenn expandiert */}
+                {item.isExpanded && (
+                  <div className="submenu-container">
+                    {sortedMenuItems
+                      .filter(subItem => subItem.parentId === item.id)
+                      .map(subItem => (
+                        <div key={subItem.id} className="submenu-item">
+                          <div className="menu-item-header">
+                            <span className="submenu-dash">-</span>
+                            <span className="menu-item-title">{subItem.title}</span>
+                            <div className="menu-item-id">{subItem.id}</div>
+                            <div className="menu-item-actions">
+                              <button className="action-btn edit" onClick={() => handleEditItem(subItem)}>
+                                <Edit size={16} />
+                              </button>
+                              <button className="action-btn up" onClick={() => moveItemUp(subItem.id)}>
+                                <span>▲</span>
+                              </button>
+                              <button className="action-btn down" onClick={() => moveItemDown(subItem.id)}>
+                                <span>▼</span>
+                              </button>
+                              <button className="action-btn delete" onClick={() => handleDeleteItem(subItem.id)}>
+                                <Trash size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                    ))}
+                    
+                    {/* Button zum Hinzufügen einer Unterkategorie */}
+                    <div className="add-submenu">
+                      <button className="add-submenu-btn" onClick={() => handleAddItem('submenu', item.id)}>
+                        <Plus size={14} />
+                        Sub-Kategorie Hinzufügen
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          } else if (item.type === 'submenu' && item.parentId === null) {
+            // Eigenständige Untermenüeinträge ohne parent
+            return (
+              <div key={item.id} className="menu-item">
+                <div className="menu-item-header">
+                  {item.isExpanded ? (
+                    <button className="toggle-btn" onClick={() => toggleExpand(item.id)}>
+                      <ChevronDown size={16} />
+                    </button>
+                  ) : (
+                    <button className="toggle-btn" onClick={() => toggleExpand(item.id)}>
+                      <ChevronDown size={16} style={{ transform: 'rotate(-90deg)' }} />
+                    </button>
+                  )}
+                  <span className="menu-item-title">{item.title}</span>
+                  <div className="menu-item-id">{item.id}</div>
+                  <div className="menu-item-actions">
+                    <button className="action-btn edit" onClick={() => handleEditItem(item)}>
+                      <Edit size={16} />
+                    </button>
+                    <button className="action-btn up" onClick={() => moveItemUp(item.id)}>
+                      <span>▲</span>
+                    </button>
+                    <button className="action-btn down" onClick={() => moveItemDown(item.id)}>
+                      <span>▼</span>
+                    </button>
+                    <button className="action-btn delete" onClick={() => handleDeleteItem(item.id)}>
+                      <Trash size={16} />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Zeige "Kategorie hinzufügen" Button, wenn expandiert */}
+                {item.isExpanded && (
+                  <div className="submenu-container">
+                    <div className="add-submenu">
+                      <button className="add-submenu-btn" onClick={() => handleAddItem('submenu', item.id)}>
+                        <Plus size={14} />
+                        Kategorie Hinzufügen
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          return null;
+        })}
+        
+        {/* Button zum Hinzufügen von Kategorien */}
+        <div className="add-category">
+          <button className="add-category-btn" onClick={() => handleAddItem('menu')}>
+            <Plus size={14} />
+            Kategorie Hinzufügen
+          </button>
+        </div>
+      </div>
+      
+      {/* Bearbeitungsmodal */}
+      {editingItem && (
+        <div className="modal-overlay">
+          <div className="modal menu-modal">
+            <div className="modal-header">
+              <h2>{editingItem.type === 'menu' ? 'Menüeintrag bearbeiten' : 'Unterkategorie bearbeiten'}</h2>
+              <button className="close-btn" onClick={() => setEditingItem(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveItem}>
+              <div className="form-group">
+                <label htmlFor="title">Titel</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={menuFormData.title}
+                  onChange={handleFormChange}
+                  required
+                />
+              </div>
+              
+              {menuFormData.type === 'submenu' && (
+                <div className="form-group">
+                  <label htmlFor="parentId">Übergeordneter Eintrag</label>
+                  <select
+                    id="parentId"
+                    name="parentId"
+                    value={menuFormData.parentId || ''}
+                    onChange={handleFormChange}
+                  >
+                    <option value="">Kein übergeordneter Eintrag</option>
+                    {menuItems
+                      .filter(item => item.type === 'menu' || (item.type === 'submenu' && item.id !== menuFormData.id))
+                      .map(item => (
+                        <option key={item.id} value={item.id}>
+                          {item.title} (ID: {item.id})
+                        </option>
+                      ))
+                    }
+                  </select>
+                </div>
+              )}
+              
+              <div className="form-actions">
+                <button type="button" className="cancel-btn" onClick={() => setEditingItem(null)}>
+                  Abbrechen
+                </button>
+                <button type="submit" className="save-btn">
+                  Speichern
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Einstellungen-Komponente (Platzhalter)
 const SettingsContent = () => {
   return (
@@ -865,6 +1216,8 @@ export default function App() {
         return <UsersManagementContent />;
       case 'settings':
         return <SettingsContent />;
+      case 'menu':
+        return <MenuEditorContent />;
       default:
         return <DashboardContent />;
     }

@@ -11,7 +11,145 @@
   min-width: 120px;
 }
 
+/* Menü-Editor Styling */
+.menu-editor-content {
+  padding: 30px;
+  flex: 1;
+}
 
+.menu-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.menu-editor-header h1 {
+  margin-bottom: 0;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.menu-list {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  overflow: hidden;
+  padding: 20px;
+}
+
+.menu-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.menu-item {
+  margin-bottom: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.menu-item-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background: #f9f9f9;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.menu-item-title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.menu-item-id {
+  color: #7f8c8d;
+  font-size: 14px;
+  margin-right: 15px;
+}
+
+.menu-item-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.menu-item-actions .action-btn {
+  width: 30px;
+  height: 30px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.menu-item-actions .action-btn:hover {
+  background: #f1f5f9;
+}
+
+.action-btn.edit:hover {
+  color: #3498db;
+}
+
+.action-btn.delete:hover {
+  color: #e74c3c;
+}
+
+.submenu-container {
+  padding: 10px 10px 10px 40px;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
+
+.submenu-item {
+  margin-bottom: 8px;
+}
+
+.submenu-dash {
+  margin-right: 10px;
+  color: #7f8c8d;
+}
+
+.add-submenu, .add-category {
+  margin-top: 10px;
+}
+
+.add-submenu-btn, .add-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  border: 1px dashed #a0aec0;
+  border-radius: 4px;
+  padding: 8px 15px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-submenu-btn:hover, .add-category-btn:hover {
+  background: #e2e8f0;
+  color: #2c3e50;
+}
+
+.menu-modal {
+  max-width: 500px;
+}
 
 /* Grundlegendes Reset und Layout */
 * {
