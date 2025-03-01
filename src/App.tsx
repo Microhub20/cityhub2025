@@ -40,7 +40,7 @@ const Sidebar = ({ activeView, setActiveView }) => {
           <li className={activeView === 'apps' ? 'active' : ''}>
             <a href="#apps" onClick={() => setActiveView('apps')}>
               <Grid className="icon" size={18} />
-              Apps verwalten
+              Startbildschirm
             </a>
           </li>
           <li className={activeView === 'maengel' ? 'active' : ''}>
@@ -281,7 +281,7 @@ const AppsManagementContent = () => {
   return (
     <div className="apps-content">
       <div className="apps-header">
-        <h1>Apps verwalten</h1>
+        <h1>Startbildschirm</h1>
         <button className="add-btn" onClick={() => openEditModal(null)}>
           <Plus size={16} />
           Neue App
