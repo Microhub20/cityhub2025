@@ -183,7 +183,7 @@ const AppsManagementContent = () => {
   const [aktiveZeile, setAktiveZeile] = useState(1);
   // Status für das Hinzufügen einer neuen Zeile
   const [isAddingZeile, setIsAddingZeile] = useState(false);
-  
+
   // Zeile hinzufügen
   const addZeile = () => {
     const neueZeileId = Math.max(...startseiteZeilen.map(zeile => zeile.id), 0) + 1;
@@ -210,7 +210,7 @@ const AppsManagementContent = () => {
   const deleteZeile = (id) => {
     if (window.confirm('Möchten Sie diese Zeile wirklich löschen?')) {
       const aktualisierteListe = startseiteZeilen.filter(zeile => zeile.id !== id);
-      
+
       // Position neu nummerieren
       const neuNummeriert = aktualisierteListe.map((zeile, index) => ({
         ...zeile,
@@ -218,7 +218,7 @@ const AppsManagementContent = () => {
       }));
 
       setStartseiteZeilen(neuNummeriert);
-      
+
       // Wenn die aktive Zeile gelöscht wurde, ersten Eintrag oder null setzen
       if (aktiveZeile === id) {
         setAktiveZeile(neuNummeriert.length > 0 ? neuNummeriert[0].id : null);
@@ -230,15 +230,15 @@ const AppsManagementContent = () => {
   const moveZeileUp = (id) => {
     const index = startseiteZeilen.findIndex(zeile => zeile.id === id);
     if (index <= 0) return;
-    
+
     const neueZeilen = [...startseiteZeilen];
     [neueZeilen[index-1], neueZeilen[index]] = [neueZeilen[index], neueZeilen[index-1]];
-    
+
     // Position aktualisieren
     neueZeilen.forEach((zeile, i) => {
       zeile.position = i + 1;
     });
-    
+
     setStartseiteZeilen(neueZeilen);
   };
 
@@ -246,15 +246,15 @@ const AppsManagementContent = () => {
   const moveZeileDown = (id) => {
     const index = startseiteZeilen.findIndex(zeile => zeile.id === id);
     if (index >= startseiteZeilen.length - 1) return;
-    
+
     const neueZeilen = [...startseiteZeilen];
     [neueZeilen[index], neueZeilen[index+1]] = [neueZeilen[index+1], neueZeilen[index]];
-    
+
     // Position aktualisieren
     neueZeilen.forEach((zeile, i) => {
       zeile.position = i + 1;
     });
-    
+
     setStartseiteZeilen(neueZeilen);
   };
 
@@ -277,7 +277,7 @@ const AppsManagementContent = () => {
       'https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=600',
       'https://images.unsplash.com/photo-1594284937520-e27ea0a16fb9?q=80&w=600'
     ];
-    
+
     const zufallsBild = beispielBilder[Math.floor(Math.random() * beispielBilder.length)];
     updateZeile(id, { bild: zufallsBild });
   };
@@ -330,7 +330,7 @@ const AppsManagementContent = () => {
           {aktuelleZeile && (
             <div className="zeile-editor">
               <h3>Zeile {aktuelleZeile.position}</h3>
-              
+
               <div className="form-group">
                 <label>Typ:</label>
                 <select 
@@ -458,9 +458,11 @@ const AppsManagementContent = () => {
               <div className="phone-status-bar">Mittelpunkt Oberfranken</div>
               <div className="phone-grid">
                 {startseiteZeilen.map((zeile, index) => (
-                  <div key={zeile.id} className={`app-kachel kachel-${index}`}>
+                  <div key={zeile.id} className={`app-kachel kachel-${index} kachel-${zeile.subTyp?.toLowerCase() || ''}`}>
                     {zeile.bild && <img src={zeile.bild} alt={zeile.titel} />}
                     <span className="kachel-titel">{zeile.titel}</span>
+                    {zeile.subTyp === 'Link' && <small className="kachel-link-indicator">→</small>}
+                    {zeile.subTyp === 'Neue Mängelmeldung' && <small className="kachel-maengel-indicator">+</small>}
                   </div>
                 ))}
               </div>
@@ -497,7 +499,7 @@ const MaengelContent = () => {
     setMaengelFormData({
       ...maengel
     });
-    
+
     // Karte nach dem Öffnen des Modals initialisieren
     setTimeout(() => {
       if (document.getElementById('maengel-map')) {
@@ -506,15 +508,15 @@ const MaengelContent = () => {
           // Karte existiert bereits, entfernen
           mapElement._leaflet = null;
         }
-        
+
         // Karte initialisieren (Kasendorf als Standardpunkt)
         const map = L.map('maengel-map').setView([50.0771, 11.3673], 13);
-        
+
         // Kartenlayer hinzufügen
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-        
+
         // Marker platzieren, wenn die Position vorhanden ist
         if (maengel.location) {
           // Hier würde normaleweise ein Geocoding stattfinden
@@ -522,7 +524,7 @@ const MaengelContent = () => {
           const marker = L.marker([50.0771, 11.3673]).addTo(map);
           marker.bindPopup(maengel.location).openPopup();
         }
-        
+
         // Karte nach 100ms aktualisieren, um Rendering-Probleme zu vermeiden
         setTimeout(() => {
           map.invalidateSize();
@@ -895,7 +897,7 @@ const MenuEditorContent = () => {
     { id: 261, title: 'Ansprechpartner & Öffnungszeiten', type: 'menu', isExpanded: false, order: 6 },
     { id: 275, title: 'Veranstaltungen', type: 'menu', isExpanded: false, order: 7 }
   ]);
-  
+
   const [editingItem, setEditingItem] = useState(null);
   const [selectedArticleId, setSelectedArticleId] = useState(null);
   const [menuFormData, setMenuFormData] = useState({
@@ -906,12 +908,12 @@ const MenuEditorContent = () => {
     order: 0,
     isExpanded: false
   });
-  
+
   // Menüeintrag verwalten
   const handleAddItem = (type, parentId = null) => {
     const newId = Math.max(...menuItems.map(item => item.id)) + 1;
     const newOrder = menuItems.length + 1;
-    
+
     const newItem = {
       id: newId,
       title: type === 'menu' ? 'Neuer Eintrag' : 'Neue Unterkategorie',
@@ -920,23 +922,23 @@ const MenuEditorContent = () => {
       order: newOrder,
       isExpanded: false
     };
-    
+
     setMenuItems([...menuItems, newItem]);
     setEditingItem(newItem);
     setMenuFormData({...newItem});
   };
-  
+
   // Menüeintrag bearbeiten
   const handleEditItem = (item) => {
     setEditingItem(item);
     setMenuFormData({...item});
   };
-  
+
   // Öffne Artikel-Editor für ein bestimmtes Element
   const openArticleEditor = (itemId) => {
     setSelectedArticleId(itemId);
   };
-  
+
   // Menüeintrag entfernen
   const handleDeleteItem = (itemId) => {
     if (window.confirm('Möchten Sie diesen Menüeintrag wirklich löschen?')) {
@@ -947,37 +949,37 @@ const MenuEditorContent = () => {
       setMenuItems(updatedItems);
     }
   };
-  
+
   // Menüeintrag speichern
   const handleSaveItem = (e) => {
     e.preventDefault();
-    
+
     const updatedItems = menuItems.map(item => 
       item.id === menuFormData.id ? {...menuFormData} : item
     );
-    
+
     setMenuItems(updatedItems);
     setEditingItem(null);
   };
-  
+
   // Ein-/Ausklappen eines Menüpunkts
   const toggleExpand = (itemId) => {
     setMenuItems(menuItems.map(item => 
       item.id === itemId ? {...item, isExpanded: !item.isExpanded} : item
     ));
   };
-  
+
   // Nach oben verschieben
   const moveItemUp = (itemId) => {
     const itemIndex = menuItems.findIndex(item => item.id === itemId);
     if (itemIndex <= 0) return;
-    
+
     const currentItem = menuItems[itemIndex];
     const prevItem = menuItems[itemIndex - 1];
-    
+
     // Stelle sicher, dass wir nicht über Kategoriegrenzen verschieben
     if (currentItem.parentId !== prevItem.parentId && currentItem.type === 'submenu') return;
-    
+
     // Tausche Order-Werte
     const updatedItems = menuItems.map(item => {
       if (item.id === currentItem.id) {
@@ -988,21 +990,21 @@ const MenuEditorContent = () => {
       }
       return item;
     });
-    
+
     setMenuItems(updatedItems.sort((a, b) => a.order - b.order));
   };
-  
+
   // Nach unten verschieben
   const moveItemDown = (itemId) => {
     const itemIndex = menuItems.findIndex(item => item.id === itemId);
     if (itemIndex >= menuItems.length - 1) return;
-    
+
     const currentItem = menuItems[itemIndex];
     const nextItem = menuItems[itemIndex + 1];
-    
+
     // Stelle sicher, dass wir nicht über Kategoriegrenzen verschieben
     if (currentItem.parentId !== nextItem.parentId && currentItem.type === 'submenu') return;
-    
+
     // Tausche Order-Werte
     const updatedItems = menuItems.map(item => {
       if (item.id === currentItem.id) {
@@ -1013,10 +1015,10 @@ const MenuEditorContent = () => {
       }
       return item;
     });
-    
+
     setMenuItems(updatedItems.sort((a, b) => a.order - b.order));
   };
-  
+
   // Ändere Formularfelder
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -1025,16 +1027,16 @@ const MenuEditorContent = () => {
       [name]: value
     });
   };
-  
+
   // Sortiere Menüeinträge für die Anzeige
   const sortedMenuItems = [...menuItems].sort((a, b) => a.order - b.order);
-  
+
   // Wenn ein Artikel ausgewählt ist, zeige den Artikel-Editor an
   if (selectedArticleId) {
     const selectedItem = menuItems.find(item => item.id === selectedArticleId);
     return <ArticleEditorContent item={selectedItem} onClose={() => setSelectedArticleId(null)} />;
   }
-  
+
   return (
     <div className="menu-editor-content">
       <div className="menu-editor-header">
@@ -1044,10 +1046,10 @@ const MenuEditorContent = () => {
           Neuer Eintrag
         </button>
       </div>
-      
+
       <div className="menu-list">
         <div className="menu-title">Auftritte</div>
-        
+
         {sortedMenuItems.map((item) => {
           // Nur oberste Menüeinträge oder Untereinträge mit passendem parent anzeigen
           if (item.type === 'menu') {
@@ -1083,7 +1085,7 @@ const MenuEditorContent = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Zeige Untermenüs an, wenn expandiert */}
                 {item.isExpanded && (
                   <div className="submenu-container">
@@ -1115,7 +1117,7 @@ const MenuEditorContent = () => {
                           </div>
                         </div>
                     ))}
-                    
+
                     {/* Button zum Hinzufügen einer Unterkategorie */}
                     <div className="add-submenu">
                       <button className="add-submenu-btn" onClick={() => handleAddItem('submenu', item.id)}>
@@ -1161,7 +1163,7 @@ const MenuEditorContent = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Zeige "Kategorie hinzufügen" Button, wenn expandiert */}
                 {item.isExpanded && (
                   <div className="submenu-container">
@@ -1178,7 +1180,7 @@ const MenuEditorContent = () => {
           }
           return null;
         })}
-        
+
         {/* Button zum Hinzufügen von Kategorien */}
         <div className="add-category">
           <button className="add-category-btn" onClick={() => handleAddItem('menu')}>
@@ -1187,7 +1189,7 @@ const MenuEditorContent = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Bearbeitungsmodal */}
       {editingItem && (
         <div className="modal-overlay">
@@ -1210,7 +1212,7 @@ const MenuEditorContent = () => {
                   required
                 />
               </div>
-              
+
               {menuFormData.type === 'submenu' && (
                 <div className="form-group">
                   <label htmlFor="parentId">Übergeordneter Eintrag</label>
@@ -1232,7 +1234,7 @@ const MenuEditorContent = () => {
                   </select>
                 </div>
               )}
-              
+
               <div className="form-actions">
                 <button type="button" className="cancel-btn" onClick={() => setEditingItem(null)}>
                   Abbrechen
@@ -1259,7 +1261,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
   const [selectedElement, setSelectedElement] = useState(null);
   const [draggedElement, setDraggedElement] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
-  
+
   // Artikelelement hinzufügen
   const addArticleElement = (type) => {
     const newId = Math.max(...articleElements.map(el => el.id), 0) + 1;
@@ -1269,10 +1271,10 @@ const ArticleEditorContent = ({ item, onClose }) => {
       content: '',
       label: `Zeile ${newId}`
     };
-    
+
     setArticleElements([...articleElements, newElement]);
   };
-  
+
   // Artikelelement entfernen
   const removeArticleElement = (id) => {
     setArticleElements(articleElements.filter(el => el.id !== id));
@@ -1280,59 +1282,59 @@ const ArticleEditorContent = ({ item, onClose }) => {
       setSelectedElement(null);
     }
   };
-  
+
   // Drag-and-Drop Funktionen
   const handleDragStart = (e, element) => {
     setDraggedElement(element);
     e.currentTarget.classList.add('dragging');
   };
-  
+
   const handleDragEnd = (e) => {
     e.currentTarget.classList.remove('dragging');
     setDraggedElement(null);
     setDragOverIndex(null);
   };
-  
+
   const handleDragOver = (e, index) => {
     e.preventDefault();
     if (draggedElement) {
       setDragOverIndex(index);
     }
   };
-  
+
   const handleDrop = (e, targetIndex) => {
     e.preventDefault();
-    
+
     if (!draggedElement) return;
-    
+
     const sourceIndex = articleElements.findIndex(el => el.id === draggedElement.id);
     if (sourceIndex === targetIndex) return;
-    
+
     const newElements = [...articleElements];
-    
+
     // Element an der Quellposition entfernen
     const [removed] = newElements.splice(sourceIndex, 1);
-    
+
     // Element an der Zielposition einfügen
     newElements.splice(targetIndex, 0, removed);
-    
+
     // Label-Nummern aktualisieren
     newElements.forEach((el, idx) => {
       el.label = `Zeile ${idx + 1}`;
     });
-    
+
     setArticleElements(newElements);
     setDraggedElement(null);
     setDragOverIndex(null);
   };
-  
+
   // Artikelelement aktualisieren
   const updateArticleElement = (id, data) => {
     setArticleElements(articleElements.map(el => 
       el.id === id ? {...el, ...data} : el
     ));
   };
-  
+
   // Komponente für Textelement
   const TextElementEditor = ({ element }) => {
     return (
@@ -1346,11 +1348,11 @@ const ArticleEditorContent = ({ item, onClose }) => {
       </div>
     );
   };
-  
+
   // Komponente für Bild-Element
   const ImageElementEditor = ({ element }) => {
     const [imageSrc, setImageSrc] = useState(element.content || '');
-    
+
     // Simuliere Bildauswahl
     const handleImageSelect = () => {
       // In einer echten App würde hier ein Datei-Upload stattfinden
@@ -1358,7 +1360,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
       setImageSrc(sampleImage);
       updateArticleElement(element.id, { content: sampleImage });
     };
-    
+
     return (
       <div className="element-editor image-editor">
         {imageSrc ? (
@@ -1378,26 +1380,26 @@ const ArticleEditorContent = ({ item, onClose }) => {
       </div>
     );
   };
-  
+
   // Komponente für Link-Element
   const LinkElementEditor = ({ element }) => {
     const [linkData, setLinkData] = useState({
       url: element.content || '',
       text: element.linkText || 'Link anzeigen'
     });
-    
+
     const handleLinkChange = (e) => {
       const { name, value } = e.target;
       const newData = { ...linkData, [name]: value };
       setLinkData(newData);
-      
+
       // Update parent component
       updateArticleElement(element.id, { 
         content: newData.url,
         linkText: newData.text
       });
     };
-    
+
     return (
       <div className="element-editor link-editor">
         <div className="form-group">
@@ -1427,11 +1429,11 @@ const ArticleEditorContent = ({ item, onClose }) => {
       </div>
     );
   };
-  
+
   // Komponente für Datei-Element
   const FileElementEditor = ({ element }) => {
     const [fileName, setFileName] = useState(element.fileName || '');
-    
+
     const handleFileSelect = () => {
       // Simuliere Dateiauswahl
       const sampleFile = 'beispiel-dokument.pdf';
@@ -1441,7 +1443,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
         fileName: sampleFile
       });
     };
-    
+
     return (
       <div className="element-editor file-editor">
         <div className="file-selector">
@@ -1466,26 +1468,26 @@ const ArticleEditorContent = ({ item, onClose }) => {
       </div>
     );
   };
-  
+
   // Komponente für E-Mail-Element
   const EmailElementEditor = ({ element }) => {
     const [emailData, setEmailData] = useState({
       email: element.content || '',
       text: element.emailText || ''
     });
-    
+
     const handleEmailChange = (e) => {
       const { name, value } = e.target;
       const newData = { ...emailData, [name]: value };
       setEmailData(newData);
-      
+
       // Update parent component
       updateArticleElement(element.id, { 
         content: newData.email,
         emailText: newData.text
       });
     };
-    
+
     return (
       <div className="element-editor email-editor">
         <div className="form-group">
@@ -1515,26 +1517,26 @@ const ArticleEditorContent = ({ item, onClose }) => {
       </div>
     );
   };
-  
+
   // Komponente für Telefonnummer-Element
   const PhoneElementEditor = ({ element }) => {
     const [phoneData, setPhoneData] = useState({
       number: element.content || '',
       text: element.phoneText || ''
     });
-    
+
     const handlePhoneChange = (e) => {
       const { name, value } = e.target;
       const newData = { ...phoneData, [name]: value };
       setPhoneData(newData);
-      
+
       // Update parent component
       updateArticleElement(element.id, { 
         content: newData.number,
         phoneText: newData.text
       });
     };
-    
+
     return (
       <div className="element-editor phone-editor">
         <div className="form-group">
@@ -1564,11 +1566,11 @@ const ArticleEditorContent = ({ item, onClose }) => {
       </div>
     );
   };
-  
+
   // Komponente für Datum-Element
   const DateElementEditor = ({ element }) => {
     const [showCalendar, setShowCalendar] = useState(false);
-    
+
     const monthData = [
       { month: 'Januar', dates: '24.01.2025' },
       { month: 'Februar', dates: '07.02.2025 & 21.02.2025' },
@@ -1576,7 +1578,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
       { month: 'April', dates: '04.04.2025 & Donnerstag 17.04.2025' },
       { month: 'Mai', dates: 'Samstag 03.05.2025 & Samstag 31.05.2025' }
     ];
-    
+
     return (
       <div className="element-editor date-editor">
         <div className="date-selector">
@@ -1587,7 +1589,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
           >
             {showCalendar ? 'Kalender schließen' : 'Termine auswählen'}
           </button>
-          
+
           {showCalendar && (
             <div className="date-calendar">
               {monthData.map((item, index) => (
@@ -1602,14 +1604,14 @@ const ArticleEditorContent = ({ item, onClose }) => {
       </div>
     );
   };
-  
+
   // Artikel speichern
   const saveArticle = () => {
     // Hier würde die Speicherlogik implementiert werden
     alert('Artikel wurde gespeichert!');
     onClose();
   };
-  
+
   return (
     <div className="article-editor-content">
       <div className="article-editor-header">
@@ -1628,7 +1630,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
           </button>
         </div>
       </div>
-      
+
       <div className="article-editor-container">
         <div className="article-sidebar">
           <div className="article-elements">
@@ -1685,7 +1687,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="article-main">
           <div className="article-title-editor">
             <label htmlFor="article-title">Titel</label>
@@ -1697,7 +1699,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
               placeholder="Artikeltitel eingeben"
             />
           </div>
-          
+
           <div className="article-content-editor">
             {selectedElement ? (
               <div className="selected-element-editor">
@@ -1732,7 +1734,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                     <option value="date">Termine</option>
                   </select>
                 </div>
-                
+
                 {selectedElement.type === 'text' && <TextElementEditor element={selectedElement} />}
                 {selectedElement.type === 'link' && <LinkElementEditor element={selectedElement} />}
                 {selectedElement.type === 'image' && <ImageElementEditor element={selectedElement} />}
@@ -1740,7 +1742,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                 {selectedElement.type === 'email' && <EmailElementEditor element={selectedElement} />}
                 {selectedElement.type === 'phone' && <PhoneElementEditor element={selectedElement} />}
                 {selectedElement.type === 'date' && <DateElementEditor element={selectedElement} />}
-                
+
                 <div className="element-actions">
                   <button 
                     className="delete-element-btn"
@@ -1756,12 +1758,12 @@ const ArticleEditorContent = ({ item, onClose }) => {
               </div>
             )}
           </div>
-          
+
           <div className="article-preview">
             <h3>Vorschau</h3>
             <div className="preview-container">
               <h2 className="preview-title">{articleTitle || "Artikeltitel"}</h2>
-              
+
               <div className="preview-elements-container">
                 {articleElements.map(element => (
                   <div key={element.id} className={`preview-element preview-${element.type}`}>
@@ -1770,7 +1772,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                         {element.content ? element.content : <em>Text wird hier angezeigt...</em>}
                       </div>
                     )}
-                    
+
                     {element.type === 'link' && (
                       <div className="preview-link">
                         {element.content ? (
@@ -1782,7 +1784,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                         )}
                       </div>
                     )}
-                    
+
                     {element.type === 'image' && (
                       <div className="preview-image">
                         {element.content ? (
@@ -1792,7 +1794,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                         )}
                       </div>
                     )}
-                    
+
                     {element.type === 'file' && (
                       <div className="preview-file">
                         {element.fileName ? (
@@ -1805,7 +1807,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                         )}
                       </div>
                     )}
-                    
+
                     {element.type === 'email' && (
                       <div className="preview-email">
                         {element.content ? (
@@ -1818,7 +1820,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                         )}
                       </div>
                     )}
-                    
+
                     {element.type === 'phone' && (
                       <div className="preview-phone">
                         {element.content ? (
@@ -1831,7 +1833,7 @@ const ArticleEditorContent = ({ item, onClose }) => {
                         )}
                       </div>
                     )}
-                    
+
                     {element.type === 'date' && (
                       <div className="preview-date">
                         <h4>Termine:</h4>
