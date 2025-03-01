@@ -2,12 +2,13 @@
 import axios from 'axios';
 
 // API-Basisadresse
-const API_BASE_URL = window.location.origin + '/api'; // Verwendet die aktuelle Domain
+const API_BASE_URL = 'https://cityhub-app.riccosauter.repl.co/api'; // Fester Endpunkt oder aus der Konfiguration
 
 // Hilfsfunktion, um korrekte URLs zu erstellen
 const formatApiUrl = (endpoint) => {
-  // Stellt sicher, dass keine doppelten Schrägstriche entstehen
-  return `${API_BASE_URL}/${endpoint}`.replace(/([^:])\/\/+/g, '$1/');
+  // Entferne führenden Schrägstrich aus dem Endpunkt, falls vorhanden
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+  return `${API_BASE_URL}/${cleanEndpoint}`;
 };
 
 // API-Client erstellen
