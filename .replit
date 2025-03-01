@@ -13,6 +13,7 @@ language = "nodejs"
 deploymentTarget = "static"
 build = ["sh", "-c", "npm run build"]
 publicDir = "dist"
+run = ["sh", "-c", "npx ts-node src/api/startServer.ts & serve -s dist"]
 
 [[ports]]
 localPort = 5173
