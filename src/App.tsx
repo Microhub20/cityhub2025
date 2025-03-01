@@ -17,7 +17,7 @@ interface AppContent {
   route: string;
   order: number;
   isActive: boolean;
-  createdAt?: Date;
+  createdAt?: Date | null;
   updatedAt?: Date;
   createdById: number;
 }
@@ -213,7 +213,7 @@ const AppsManagementContent = () => {
   };
 
   // Zeile löschen
-  const deleteZeile = (id) => {
+  const deleteZeile = (id: number) => {
     if (window.confirm('Möchten Sie diese Zeile wirklich löschen?')) {
       const aktualisierteListe = startseiteZeilen.filter(zeile => zeile.id !== id);
 
@@ -473,7 +473,7 @@ const AppsManagementContent = () => {
 const MaengelContent = () => {
   const [editingMaengel, setEditingMaengel] = useState(null);
   const [maengelFormData, setMaengelFormData] = useState({
-    id: null,
+    id: null as number | null,
     title: '',
     image: '',
     status: 'aktiv',
