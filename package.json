@@ -21,6 +21,7 @@
     "vite": "^3.0.4"
   },
   "dependencies": {
-    "axios": "^1.8.1"
+    "axios": "^1.8.1",
+    "lucide-react": "^0.477.0"
   }
 }
