@@ -9,7 +9,7 @@ import L from 'leaflet';
 
 // Typdefinitionen für unsere API-Struktur
 interface AppContent {
-  id?: number;
+  id: number;
   title: string;
   description: string;
   iconName: string;
@@ -206,7 +206,7 @@ const AppsManagementContent = () => {
   };
 
   // Zeile bearbeiten
-  const updateZeile = (id, daten) => {
+  const updateZeile = (id: number, daten: Partial<AppContent>) => {
     setStartseiteZeilen(startseiteZeilen.map(zeile => 
       zeile.id === id ? {...zeile, ...daten} : zeile
     ));
@@ -538,7 +538,7 @@ const MaengelContent = () => {
     setTimeout(() => {
       if (document.getElementById('maengel-map')) {
         const mapElement = document.getElementById('maengel-map');
-        if (mapElement._leaflet_id) {
+        if (mapElement && mapElement._leaflet_id) {
           // Karte existiert bereits, entfernen
           mapElement._leaflet = null;
         }
