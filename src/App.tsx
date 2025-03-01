@@ -482,6 +482,45 @@ const MaengelContent = () => {
   });
   const [mapTab, setMapTab] = useState('karte');
 
+  // Lade gespeicherte Kategorien aus dem localStorage
+  const [savedCategories, setSavedCategories] = useState(() => {
+    const savedData = localStorage.getItem('cityhubCategories');
+    if (savedData) {
+      try {
+        return JSON.parse(savedData);
+      } catch (e) {
+        console.error('Fehler beim Laden der Kategorien:', e);
+        return [];
+      }
+    }
+    return [
+      {
+        id: 1,
+        name: 'Schadensmeldungen',
+        isExpanded: true,
+        subCategories: [
+          { id: 101, name: 'Straßenschäden' },
+          { id: 102, name: 'Beleuchtung' },
+          { id: 103, name: 'Müllablagerung' },
+          { id: 104, name: 'Sonstiges' },
+          { id: 105, name: 'Vandalismus' },
+        ]
+      },
+      {
+        id: 2,
+        name: 'Verbesserung & Lob',
+        isExpanded: false,
+        subCategories: []
+      },
+      {
+        id: 3,
+        name: 'Sonstiges',
+        isExpanded: false,
+        subCategories: []
+      }
+    ];
+  });
+
   // Handler für das Öffnen des Bearbeitungsmodals
   const openEditModal = (maengel) => {
     setEditingMaengel(maengel);
@@ -525,10 +564,23 @@ const MaengelContent = () => {
   // Handler für Änderungen an Formularfeldern
   const handleMaengelFormChange = (e) => {
     const { name, value } = e.target;
-    setMaengelFormData({
-      ...maengelFormData,
-      [name]: value
-    });
+    
+    // Wenn die Kategorie geändert wird, setze die Unterkategorie auf die erste verfügbare
+    if (name === 'category') {
+      const selectedCategory = savedCategories.find(cat => cat.name === value);
+      const firstSubCategory = selectedCategory?.subCategories?.[0]?.name || 'Keine Unterkategorie';
+      
+      setMaengelFormData({
+        ...maengelFormData,
+        [name]: value,
+        subCategory: firstSubCategory
+      });
+    } else {
+      setMaengelFormData({
+        ...maengelFormData,
+        [name]: value
+      });
+    }
   };
 
   // Handler für das Speichern der Änderungen
@@ -809,13 +861,12 @@ const MaengelContent = () => {
                   <select
                     id="category"
                     name="category"
-                    value={maengelFormData.category || 'Schadensmeldungen'}
+                    value={maengelFormData.category || (savedCategories[0]?.name || 'Schadensmeldungen')}
                     onChange={handleMaengelFormChange}
                   >
-                    <option value="Schadensmeldungen">Schadensmeldungen</option>
-                    <option value="Reinigung">Reinigung</option>
-                    <option value="Beleuchtung">Beleuchtung</option>
-                    <option value="Sonstiges">Sonstiges</option>
+                    {savedCategories.map(category => (
+                      <option key={category.id} value={category.name}>{category.name}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -827,10 +878,17 @@ const MaengelContent = () => {
                     value={maengelFormData.subCategory || 'Straßenschäden'}
                     onChange={handleMaengelFormChange}
                   >
-                    <option value="Straßenschäden">Straßenschäden</option>
-                    <option value="Gehwegschäden">Gehwegschäden</option>
-                    <option value="Schilder">Schilder</option>
-                    <option value="Sonstiges">Sonstiges</option>
+                    {savedCategories
+                      .find(cat => cat.name === maengelFormData.category)?.subCategories.map(sub => (
+                        <option key={sub.id} value={sub.name}>{sub.name}</option>
+                      )) || (
+                        <option value="Keine Unterkategorie">Keine Unterkategorie</option>
+                      )
+                    }
+                    {/* Fallback-Option, falls keine Unterkategorien gefunden werden */}
+                    {!savedCategories.find(cat => cat.name === maengelFormData.category)?.subCategories?.length && (
+                      <option value="Keine Unterkategorie">Keine Unterkategorie</option>
+                    )}
                   </select>
                 </div>
               </div>
