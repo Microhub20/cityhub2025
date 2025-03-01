@@ -1,8 +1,12 @@
 
 import axios from 'axios';
 
-// API-Basisadresse
-const API_BASE_URL = 'https://cityhub-app.riccosauter.repl.co/api'; // Fester Endpunkt oder aus der Konfiguration
+// API-Basisadresse - dynamische Ermittlung basierend auf aktueller URL
+const isDevelopment = import.meta.env.DEV;
+// In der Entwicklung nutze den dev-Server, sonst relative Pfade für Deployments
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:3001/api'  // Entwicklungsserver auf Port 3001
+  : '/api';                     // Im Deployment: relativer Pfad
 
 // Hilfsfunktion, um korrekte URLs zu erstellen
 const formatApiUrl = (endpoint) => {
