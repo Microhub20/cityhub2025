@@ -2702,7 +2702,7 @@ export default function App() {
 
 // Müllkalender-Verwaltungskomponente
 const WasteCalendarContent = () => {
-  const [activeTab, setActiveTab] = useState('regions');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [isEditingItem, setIsEditingItem] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -2925,6 +2925,80 @@ const WasteCalendarContent = () => {
     </div>
   );
   
+  // Dashboard-Komponente
+  const WasteDashboardContent = () => {
+    // Berechne aktive Regionen und Abfallarten für die Statistiken
+    const activeRegions = regions.filter(region => region.isActive).length;
+    const activeWasteTypes = wasteTypes.filter(type => type.isActive).length;
+    
+    // Bestimme die nächsten Abholtermine
+    const now = new Date();
+    const upcomingSchedules = [...schedules]
+      .filter(schedule => schedule.date >= now)
+      .sort((a, b) => a.date - b.date)
+      .slice(0, 3);
+    
+    // Berechne Benachrichtigungsstatistik
+    const totalSubscriptions = 845; // Mock-Wert
+    
+    return (
+      <div className="waste-dashboard-content">
+        <h1>Dashboard</h1>
+        <p className="welcome-message">Willkommen zurück, Admin!</p>
+        
+        <div className="stats-grid">
+          <div className="stat-card">
+            <h3>Aktive Regionen</h3>
+            <p className="stat-number">{activeRegions}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Aktive Abfallarten</h3>
+            <p className="stat-number">{activeWasteTypes}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Bevorstehende Abholungen</h3>
+            <p className="stat-number">{upcomingSchedules.length}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Abonnenten</h3>
+            <p className="stat-number">{totalSubscriptions}</p>
+          </div>
+        </div>
+
+        <h2>Neueste Aktivitäten</h2>
+        <div className="activity-list">
+          <div className="activity-item">
+            <div className="activity-icon">
+              <FileEdit size={20} />
+            </div>
+            <div className="activity-details">
+              <h4>Neuer Abholtermin für Restmüll erstellt</h4>
+              <p>Vor 2 Stunden · Admin</p>
+            </div>
+          </div>
+          <div className="activity-item">
+            <div className="activity-icon">
+              <Plus size={20} />
+            </div>
+            <div className="activity-details">
+              <h4>Neue Region "Weststadt" hinzugefügt</h4>
+              <p>Vor 1 Tag · Admin</p>
+            </div>
+          </div>
+          <div className="activity-item">
+            <div className="activity-icon">
+              <FileEdit size={20} />
+            </div>
+            <div className="activity-details">
+              <h4>Benachrichtigungen für 3 Abholtermine gesendet</h4>
+              <p>Vor 2 Tagen · System</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   // Terminkalenderansicht
   const CalendarView = () => {
     // Kalendernavigation
@@ -3099,9 +3173,13 @@ const WasteCalendarContent = () => {
 
   return (
     <div className="waste-calendar-content">
-      <h1>Abfallkalender-Verwaltung</h1>
-      
       <div className="tab-buttons">
+        <button
+          className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+        >
+          Dashboard
+        </button>
         <button
           className={`tab-button ${activeTab === 'regions' ? 'active' : ''}`}
           onClick={() => setActiveTab('regions')}
@@ -3129,6 +3207,9 @@ const WasteCalendarContent = () => {
       </div>
 
       <div className="waste-calendar-content-body">
+        {/* Dashboard */}
+        {activeTab === 'dashboard' && <WasteDashboardContent />}
+        
         {/* Regionen-Verwaltung */}
         {activeTab === 'regions' && (
           <div className="regions-tab">
