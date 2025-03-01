@@ -5,6 +5,7 @@ import { Check, ChevronDown, Edit, FileEdit, Grid, Home, LogOut, Plus, Settings,
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
 // Typdefinitionen für unsere API-Struktur
 interface AppContent {
@@ -452,6 +453,38 @@ const MaengelContent = () => {
     setMaengelFormData({
       ...maengel
     });
+    
+    // Karte nach dem Öffnen des Modals initialisieren
+    setTimeout(() => {
+      if (document.getElementById('maengel-map')) {
+        const mapElement = document.getElementById('maengel-map');
+        if (mapElement._leaflet_id) {
+          // Karte existiert bereits, entfernen
+          mapElement._leaflet = null;
+        }
+        
+        // Karte initialisieren (Kasendorf als Standardpunkt)
+        const map = L.map('maengel-map').setView([50.0771, 11.3673], 13);
+        
+        // Kartenlayer hinzufügen
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Marker platzieren, wenn die Position vorhanden ist
+        if (maengel.location) {
+          // Hier würde normaleweise ein Geocoding stattfinden
+          // Für die Demo verwenden wir einen festen Punkt
+          const marker = L.marker([50.0771, 11.3673]).addTo(map);
+          marker.bindPopup(maengel.location).openPopup();
+        }
+        
+        // Karte nach 100ms aktualisieren, um Rendering-Probleme zu vermeiden
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 100);
+      }
+    }, 500);
   };
 
   // Handler für Änderungen an Formularfeldern
@@ -773,10 +806,7 @@ const MaengelContent = () => {
                   <button type="button" className={`map-tab ${mapTab === 'satellit' ? 'active' : ''}`} onClick={() => setMapTab('satellit')}>Satellit</button>
                 </div>
                 <div className="map-placeholder">
-                  <div className="map-image">
-                    {/* Karte würde hier eingebunden werden */}
-                    <img src="https://maps.googleapis.com/maps/api/staticmap?center=Kasendorf&zoom=14&size=600x300&key=YOUR_API_KEY" alt="Kartenansicht" />
-                  </div>
+                  <div id="maengel-map" className="leaflet-container"></div>
                 </div>
               </div>
 
