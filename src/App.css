@@ -1,4 +1,18 @@
 
+/* Leaflet Map Styles */
+.leaflet-container {
+  width: 100%;
+  height: 300px;
+  z-index: 1;
+}
+
+/* Notwendig, damit die Popup-Marker korrekt angezeigt werden */
+.leaflet-popup-content-wrapper {
+  min-width: 120px;
+}
+
+
+
 /* Grundlegendes Reset und Layout */
 * {
   box-sizing: border-box;

@@ -1,10 +1,10 @@
-
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { adminService } from './api/adminService';
 import { Check, ChevronDown, Edit, FileEdit, Grid, Home, LogOut, Plus, Settings, Trash, User, X } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import 'leaflet/dist/leaflet.css';
 
 // Typdefinitionen für unsere API-Struktur
 interface AppContent {
@@ -111,7 +111,7 @@ const DashboardContent = () => {
           <p className="stat-number">Online</p>
         </div>
       </div>
-      
+
       <h2>Neueste Aktivitäten</h2>
       <div className="activity-list">
         <div className="activity-item">
@@ -174,7 +174,7 @@ const AppsManagementContent = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await adminService.getContents();
       setAppContents(response);
     } catch (err) {
@@ -191,13 +191,13 @@ const AppsManagementContent = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       if (editingApp && editingApp.id) {
         await adminService.updateContent(editingApp.id.toString(), formData);
       } else {
         await adminService.createContent(formData);
       }
-      
+
       await fetchApps();
       setIsModalOpen(false);
       resetForm();
@@ -215,7 +215,7 @@ const AppsManagementContent = () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         await adminService.deleteContent(id.toString());
         await fetchApps();
       } catch (err) {
@@ -256,7 +256,7 @@ const AppsManagementContent = () => {
   // Input-Änderung verarbeiten
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checkbox = e.target as HTMLInputElement;
       setFormData({
@@ -445,7 +445,7 @@ const MaengelContent = () => {
     createdAt: new Date()
   });
   const [mapTab, setMapTab] = useState('karte');
-  
+
   // Handler für das Öffnen des Bearbeitungsmodals
   const openEditModal = (maengel) => {
     setEditingMaengel(maengel);
@@ -466,35 +466,35 @@ const MaengelContent = () => {
   // Handler für das Speichern der Änderungen
   const handleMaengelSave = (e) => {
     e.preventDefault();
-    
+
     // Aktualisierte Liste erstellen
     const updatedList = maengelList.map(maengel => 
       maengel.id === maengelFormData.id ? maengelFormData : maengel
     );
-    
+
     setMaengelList(updatedList);
     setEditingMaengel(null);
   };
-  
+
   // PDF Export-Funktion
   const exportPDF = (maengel) => {
     // PDF-Dokument erstellen
     const doc = new jsPDF();
-    
+
     // Titel hinzufügen
     doc.setFontSize(18);
     doc.text('Mängelmeldung - ' + maengel.title, 14, 22);
-    
+
     // Statusbalken
     doc.setFillColor(maengel.status === 'aktiv' ? 76 : 120, maengel.status === 'aktiv' ? 175 : 120, maengel.status === 'aktiv' ? 80 : 120);
     doc.rect(14, 28, 180, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.text('Status: ' + (maengel.status === 'aktiv' ? 'Aktiv' : 'Inaktiv'), 18, 34);
-    
+
     // Zurück zur schwarzen Textfarbe
     doc.setTextColor(0, 0, 0);
-    
+
     // Bild laden und einfügen (wenn vorhanden)
     if (maengel.image) {
       try {
@@ -506,45 +506,45 @@ const MaengelContent = () => {
         console.error('Fehler beim Laden des Bildes:', error);
       }
     }
-    
+
     // Informationsabschnitt
     doc.setFontSize(14);
     doc.text('Informationen', 14, 120);
-    
+
     doc.setFontSize(11);
     doc.text('Standort: ' + (maengel.location || 'Nicht angegeben'), 14, 130);
     doc.text('Kategorie: ' + (maengel.category || 'Nicht kategorisiert'), 14, 140);
     doc.text('Unterkategorie: ' + (maengel.subCategory || 'Keine'), 14, 150);
     doc.text('Gemeldet von: ' + (maengel.reporterName || 'Anonym'), 14, 160);
     doc.text('Kontakt: ' + (maengel.reporterEmail || 'Keine E-Mail angegeben'), 14, 170);
-    
+
     // Datum formatieren
     const createdDate = maengel.createdAt instanceof Date 
       ? maengel.createdAt.toLocaleDateString('de-DE') 
       : new Date(maengel.createdAt).toLocaleDateString('de-DE');
-    
+
     doc.text('Meldedatum: ' + createdDate, 14, 180);
-    
+
     // Beschreibung
     doc.setFontSize(14);
     doc.text('Beschreibung', 14, 200);
-    
+
     // Text umbrechen
     const splitDescription = doc.splitTextToSize(maengel.description || 'Keine Beschreibung vorhanden', 180);
     doc.setFontSize(11);
     doc.text(splitDescription, 14, 210);
-    
+
     // Zweite Seite, wenn eine Rückmeldung existiert
     if (maengel.response) {
       doc.addPage();
       doc.setFontSize(14);
       doc.text('Rückmeldung', 14, 20);
-      
+
       const splitResponse = doc.splitTextToSize(maengel.response, 180);
       doc.setFontSize(11);
       doc.text(splitResponse, 14, 30);
     }
-    
+
     // PDF speichern
     doc.save('Maengelmeldung-' + maengel.id + '.pdf');
   };
@@ -595,7 +595,7 @@ const MaengelContent = () => {
       <div className="maengel-header">
         <h1>Mängelmeldungen</h1>
       </div>
-      
+
       <div className="maengel-table">
         <div className="maengel-table-header">
           <div className="column-bild">Bild</div>
@@ -603,7 +603,7 @@ const MaengelContent = () => {
           <div className="column-aktiv">Aktiv</div>
           <div className="column-aktionen">Aktionen</div>
         </div>
-        
+
         {maengelList.map(maengel => (
           <div key={maengel.id} className="maengel-row">
             <div className="column-bild">
