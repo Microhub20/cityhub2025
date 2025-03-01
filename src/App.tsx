@@ -61,6 +61,12 @@ const Sidebar = ({ activeView, setActiveView }) => {
               Auftritte
             </a>
           </li>
+          <li className={activeView === 'waste' ? 'active' : ''}>
+            <a href="#waste" onClick={() => setActiveView('waste')}>
+              <FileEdit className="icon" size={18} />
+              Müllkalender
+            </a>
+          </li>
           <li className={activeView === 'settings' ? 'active' : ''}>
             <a href="#settings" onClick={() => setActiveView('settings')}>
               <Settings className="icon" size={18} />
@@ -2678,6 +2684,8 @@ export default function App() {
         return <SettingsContent />;
       case 'menu':
         return <MenuEditorContent />;
+      case 'waste':
+        return <WasteCalendarContent />;
       default:
         return <DashboardContent />;
     }
@@ -2693,3 +2701,756 @@ export default function App() {
     </div>
   );
 }
+
+// Müllkalender-Verwaltungskomponente
+const WasteCalendarContent = () => {
+  const [activeTab, setActiveTab] = useState('regions');
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isEditingItem, setIsEditingItem] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Status für Regionen, Abfallarten und Abholtermine
+  const [regions, setRegions] = useState([
+    { id: 1, name: 'Innenstadt', description: 'Stadtbezirk Innenstadt', isActive: true },
+    { id: 2, name: 'Nordstadt', description: 'Nördlicher Stadtbezirk', isActive: true },
+    { id: 3, name: 'Ost', description: 'Östlicher Stadtbezirk', isActive: true },
+    { id: 4, name: 'Süd', description: 'Südlicher Stadtbezirk mit Vororten', isActive: false }
+  ]);
+
+  const [wasteTypes, setWasteTypes] = useState([
+    { id: 1, name: 'Restmüll', description: 'Regulärer Haushaltsmüll', color: '#555555', isActive: true },
+    { id: 2, name: 'Biomüll', description: 'Organische Abfälle', color: '#8BC34A', isActive: true },
+    { id: 3, name: 'Papier', description: 'Papier und Kartonage', color: '#2196F3', isActive: true },
+    { id: 4, name: 'Gelber Sack', description: 'Verpackungen mit grünem Punkt', color: '#FFC107', isActive: true },
+    { id: 5, name: 'Sperrmüll', description: 'Große Gegenstände', color: '#9C27B0', isActive: true }
+  ]);
+
+  const [schedules, setSchedules] = useState([
+    { 
+      id: 1, 
+      regionId: 1, 
+      wasteTypeId: 1, 
+      date: new Date(2023, 11, 15), // 15. Dezember 2023
+      notificationSent: true 
+    },
+    { 
+      id: 2, 
+      regionId: 1, 
+      wasteTypeId: 2, 
+      date: new Date(2023, 11, 18), // 18. Dezember 2023
+      notificationSent: false 
+    },
+    { 
+      id: 3, 
+      regionId: 2, 
+      wasteTypeId: 1, 
+      date: new Date(2023, 11, 16), // 16. Dezember 2023
+      notificationSent: true 
+    },
+    { 
+      id: 4, 
+      regionId: 3, 
+      wasteTypeId: 3, 
+      date: new Date(2023, 11, 20), // 20. Dezember 2023
+      notificationSent: false
+    },
+    { 
+      id: 5, 
+      regionId: 1, 
+      wasteTypeId: 4, 
+      date: new Date(2023, 11, 22), // 22. Dezember 2023
+      notificationSent: false 
+    }
+  ]);
+
+  // State für Formulardaten
+  const [formData, setFormData] = useState({
+    id: null,
+    name: '',
+    description: '',
+    color: '#000000',
+    isActive: true,
+    regionId: '',
+    wasteTypeId: '',
+    date: new Date(),
+    notificationSent: false
+  });
+
+  // Hilfsfunktion: Regionenname anhand der ID finden
+  const getRegionName = (regionId) => {
+    const region = regions.find(r => r.id === regionId);
+    return region ? region.name : 'Unbekannte Region';
+  };
+
+  // Hilfsfunktion: Abfallartname und Farbe anhand der ID finden
+  const getWasteTypeInfo = (wasteTypeId) => {
+    const wasteType = wasteTypes.find(w => w.id === wasteTypeId);
+    return wasteType ? { name: wasteType.name, color: wasteType.color } : { name: 'Unbekannt', color: '#999999' };
+  };
+
+  // Hilfsfunktion: Datum formatieren
+  const formatDate = (date) => {
+    return date.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  // Formular-Handler
+  const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      setFormData({ ...formData, [name]: checked });
+    } else if (name === 'date') {
+      setFormData({ ...formData, [name]: new Date(value) });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  // Element hinzufügen oder bearbeiten
+  const handleAddOrEdit = (type) => {
+    if (isEditingItem) {
+      // Bearbeiten
+      if (type === 'region') {
+        setRegions(regions.map(region => 
+          region.id === formData.id ? { ...formData } : region
+        ));
+      } else if (type === 'wasteType') {
+        setWasteTypes(wasteTypes.map(wasteType => 
+          wasteType.id === formData.id ? { ...formData } : wasteType
+        ));
+      } else if (type === 'schedule') {
+        setSchedules(schedules.map(schedule => 
+          schedule.id === formData.id ? { ...formData } : schedule
+        ));
+      }
+    } else {
+      // Neu hinzufügen
+      const newId = Math.max(0, ...(
+        type === 'region' ? regions.map(r => r.id) : 
+        type === 'wasteType' ? wasteTypes.map(w => w.id) : 
+        schedules.map(s => s.id)
+      )) + 1;
+      
+      const newItem = { ...formData, id: newId };
+      
+      if (type === 'region') {
+        setRegions([...regions, newItem]);
+      } else if (type === 'wasteType') {
+        setWasteTypes([...wasteTypes, newItem]);
+      } else if (type === 'schedule') {
+        setSchedules([...schedules, newItem]);
+      }
+    }
+    
+    // Formular zurücksetzen
+    resetForm();
+  };
+
+  // Element zum Bearbeiten auswählen
+  const handleEdit = (type, item) => {
+    setIsEditingItem(item.id);
+    setIsAddingItem(true);
+    setFormData({
+      ...item,
+      // Sicherstellen, dass Date-Objekte korrekt sind
+      date: item.date instanceof Date ? item.date : new Date(item.date)
+    });
+  };
+
+  // Element löschen
+  const handleDelete = (type, itemId) => {
+    if (window.confirm('Sind Sie sicher, dass Sie diesen Eintrag löschen möchten?')) {
+      if (type === 'region') {
+        setRegions(regions.filter(region => region.id !== itemId));
+      } else if (type === 'wasteType') {
+        setWasteTypes(wasteTypes.filter(wasteType => wasteType.id !== itemId));
+      } else if (type === 'schedule') {
+        setSchedules(schedules.filter(schedule => schedule.id !== itemId));
+      }
+    }
+  };
+
+  // Formular zurücksetzen
+  const resetForm = () => {
+    setIsAddingItem(false);
+    setIsEditingItem(null);
+    setFormData({
+      id: null,
+      name: '',
+      description: '',
+      color: '#000000',
+      isActive: true,
+      regionId: '',
+      wasteTypeId: '',
+      date: new Date(),
+      notificationSent: false
+    });
+  };
+
+  // Benachrichtigungen für Abholtermine senden
+  const sendNotification = (scheduleId) => {
+    // Hier würde die tatsächliche Benachrichtigungslogik implementiert
+    setSchedules(schedules.map(schedule => 
+      schedule.id === scheduleId ? { ...schedule, notificationSent: true } : schedule
+    ));
+    
+    alert(`Benachrichtigung für Abholtermin #${scheduleId} wurde gesendet.`);
+  };
+
+  // Bulk-Termine erstellen
+  const createBulkSchedules = () => {
+    alert("Bulk-Erstellung von Abholterminen wird implementiert");
+    // Würde einen Dialog öffnen, um mehrere Termine für verschiedene Regionen und Abfallarten zu erstellen
+  };
+
+  // Terminkalenderansicht
+  const CalendarView = () => {
+    // Kalendernavigation
+    const prevMonth = () => {
+      const newDate = new Date(selectedDate);
+      newDate.setMonth(newDate.getMonth() - 1);
+      setSelectedDate(newDate);
+    };
+    
+    const nextMonth = () => {
+      const newDate = new Date(selectedDate);
+      newDate.setMonth(newDate.getMonth() + 1);
+      setSelectedDate(newDate);
+    };
+
+    // Kalender-Header mit Monatsbezeichnung
+    const monthName = selectedDate.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+    
+    // Tage im Monat berechnen
+    const daysInMonth = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth() + 1,
+      0
+    ).getDate();
+    
+    // Wochentag des ersten Tags im Monat (0 = Sonntag, 1 = Montag, ...)
+    let firstDayOfMonth = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      1
+    ).getDay();
+    
+    // In Deutschland beginnt die Woche mit Montag, daher Anpassung
+    firstDayOfMonth = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+    
+    // Kalender-Tage erstellen
+    const calendarDays = [];
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      calendarDays.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const currentDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), day);
+      
+      // Abholtermine für diesen Tag finden
+      const daySchedules = schedules.filter(schedule => 
+        schedule.date.getDate() === day &&
+        schedule.date.getMonth() === currentDate.getMonth() &&
+        schedule.date.getFullYear() === currentDate.getFullYear()
+      );
+      
+      calendarDays.push(
+        <div key={`day-${day}`} className={`calendar-day ${daySchedules.length > 0 ? 'has-schedules' : ''}`}>
+          <div className="day-number">{day}</div>
+          {daySchedules.map(schedule => {
+            const wasteType = getWasteTypeInfo(schedule.wasteTypeId);
+            return (
+              <div
+                key={schedule.id}
+                className="calendar-schedule"
+                style={{ backgroundColor: wasteType.color }}
+              >
+                <span className="schedule-region">{getRegionName(schedule.regionId)}</span>
+                <span className="schedule-type">{wasteType.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <div className="calendar-container">
+        <div className="calendar-header">
+          <button onClick={prevMonth} className="calendar-nav-btn">◀</button>
+          <h3>{monthName}</h3>
+          <button onClick={nextMonth} className="calendar-nav-btn">▶</button>
+        </div>
+        
+        <div className="calendar-weekdays">
+          <div>Mo</div>
+          <div>Di</div>
+          <div>Mi</div>
+          <div>Do</div>
+          <div>Fr</div>
+          <div>Sa</div>
+          <div>So</div>
+        </div>
+        
+        <div className="calendar-grid">
+          {calendarDays}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="waste-calendar-content">
+      <div className="waste-calendar-header">
+        <h1>Abfallkalender-Verwaltung</h1>
+        <div className="tab-buttons">
+          <button
+            className={`tab-button ${activeTab === 'regions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('regions')}
+          >
+            Regionen
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'wasteTypes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('wasteTypes')}
+          >
+            Abfallarten
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'schedules' ? 'active' : ''}`}
+            onClick={() => setActiveTab('schedules')}
+          >
+            Abholtermine
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'calendar' ? 'active' : ''}`}
+            onClick={() => setActiveTab('calendar')}
+          >
+            Kalender
+          </button>
+        </div>
+      </div>
+
+      <div className="waste-calendar-content-body">
+        {/* Regionen-Verwaltung */}
+        {activeTab === 'regions' && (
+          <div className="regions-tab">
+            <div className="table-actions">
+              <h2>Stadtbezirke</h2>
+              <button className="add-button" onClick={() => {
+                setIsAddingItem(true);
+                setFormData({
+                  ...formData,
+                  id: null,
+                  name: '',
+                  description: '',
+                  isActive: true
+                });
+              }}>
+                <Plus size={16} /> Region hinzufügen
+              </button>
+            </div>
+
+            <div className="table-container">
+              <div className="table-header">
+                <div className="column-20">Name</div>
+                <div className="column-50">Beschreibung</div>
+                <div className="column-15">Status</div>
+                <div className="column-15">Aktionen</div>
+              </div>
+
+              <div className="table-body">
+                {regions.map(region => (
+                  <div className="table-row" key={region.id}>
+                    <div className="column-20">{region.name}</div>
+                    <div className="column-50">{region.description}</div>
+                    <div className="column-15">
+                      <span className={`status-badge ${region.isActive ? 'active' : 'inactive'}`}>
+                        {region.isActive ? 'Aktiv' : 'Inaktiv'}
+                      </span>
+                    </div>
+                    <div className="column-15 actions">
+                      <button className="action-btn edit" title="Bearbeiten" onClick={() => handleEdit('region', region)}>
+                        <Edit size={16} />
+                      </button>
+                      <button className="action-btn delete" title="Löschen" onClick={() => handleDelete('region', region.id)}>
+                        <Trash size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {isAddingItem && (
+              <div className="modal-overlay">
+                <div className="modal">
+                  <div className="modal-header">
+                    <h2>{isEditingItem ? 'Region bearbeiten' : 'Neue Region'}</h2>
+                    <button className="close-btn" onClick={resetForm}>
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="form-group">
+                      <label htmlFor="name">Name</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="description">Beschreibung</label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleFormChange}
+                        rows={3}
+                      ></textarea>
+                    </div>
+                    <div className="form-group checkbox-group">
+                      <input
+                        type="checkbox"
+                        id="isActive"
+                        name="isActive"
+                        checked={formData.isActive}
+                        onChange={handleFormChange}
+                      />
+                      <label htmlFor="isActive">Region aktiv</label>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button className="cancel-btn" onClick={resetForm}>
+                      Abbrechen
+                    </button>
+                    <button 
+                      className="save-btn" 
+                      onClick={() => handleAddOrEdit('region')}
+                      disabled={!formData.name.trim()}
+                    >
+                      Speichern
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Abfallarten-Verwaltung */}
+        {activeTab === 'wasteTypes' && (
+          <div className="waste-types-tab">
+            <div className="table-actions">
+              <h2>Abfallarten</h2>
+              <button className="add-button" onClick={() => {
+                setIsAddingItem(true);
+                setFormData({
+                  ...formData,
+                  id: null,
+                  name: '',
+                  description: '',
+                  color: '#555555',
+                  isActive: true
+                });
+              }}>
+                <Plus size={16} /> Abfallart hinzufügen
+              </button>
+            </div>
+
+            <div className="table-container">
+              <div className="table-header">
+                <div className="column-20">Name</div>
+                <div className="column-40">Beschreibung</div>
+                <div className="column-15">Farbe</div>
+                <div className="column-10">Status</div>
+                <div className="column-15">Aktionen</div>
+              </div>
+
+              <div className="table-body">
+                {wasteTypes.map(wasteType => (
+                  <div className="table-row" key={wasteType.id}>
+                    <div className="column-20">{wasteType.name}</div>
+                    <div className="column-40">{wasteType.description}</div>
+                    <div className="column-15">
+                      <div 
+                        className="color-preview" 
+                        style={{ backgroundColor: wasteType.color }}
+                      ></div>
+                      <span className="color-code">{wasteType.color}</span>
+                    </div>
+                    <div className="column-10">
+                      <span className={`status-badge ${wasteType.isActive ? 'active' : 'inactive'}`}>
+                        {wasteType.isActive ? 'Aktiv' : 'Inaktiv'}
+                      </span>
+                    </div>
+                    <div className="column-15 actions">
+                      <button className="action-btn edit" title="Bearbeiten" onClick={() => handleEdit('wasteType', wasteType)}>
+                        <Edit size={16} />
+                      </button>
+                      <button className="action-btn delete" title="Löschen" onClick={() => handleDelete('wasteType', wasteType.id)}>
+                        <Trash size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {isAddingItem && (
+              <div className="modal-overlay">
+                <div className="modal">
+                  <div className="modal-header">
+                    <h2>{isEditingItem ? 'Abfallart bearbeiten' : 'Neue Abfallart'}</h2>
+                    <button className="close-btn" onClick={resetForm}>
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="form-group">
+                      <label htmlFor="name">Name</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="description">Beschreibung</label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleFormChange}
+                        rows={3}
+                      ></textarea>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="color">Farbe</label>
+                      <div className="color-input-group">
+                        <input
+                          type="color"
+                          id="color"
+                          name="color"
+                          value={formData.color}
+                          onChange={handleFormChange}
+                          className="color-input"
+                        />
+                        <input
+                          type="text"
+                          value={formData.color}
+                          onChange={handleFormChange}
+                          name="color"
+                          className="color-text"
+                        />
+                      </div>
+                    </div>
+                    <div className="form-group checkbox-group">
+                      <input
+                        type="checkbox"
+                        id="isActive"
+                        name="isActive"
+                        checked={formData.isActive}
+                        onChange={handleFormChange}
+                      />
+                      <label htmlFor="isActive">Abfallart aktiv</label>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button className="cancel-btn" onClick={resetForm}>
+                      Abbrechen
+                    </button>
+                    <button 
+                      className="save-btn" 
+                      onClick={() => handleAddOrEdit('wasteType')}
+                      disabled={!formData.name.trim()}
+                    >
+                      Speichern
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Abholtermine-Verwaltung */}
+        {activeTab === 'schedules' && (
+          <div className="schedules-tab">
+            <div className="table-actions">
+              <h2>Abholtermine</h2>
+              <div className="action-buttons">
+                <button className="add-button" onClick={() => {
+                  setIsAddingItem(true);
+                  setFormData({
+                    ...formData,
+                    id: null,
+                    regionId: regions[0]?.id || '',
+                    wasteTypeId: wasteTypes[0]?.id || '',
+                    date: new Date(),
+                    notificationSent: false
+                  });
+                }}>
+                  <Plus size={16} /> Termin hinzufügen
+                </button>
+                <button className="bulk-button" onClick={createBulkSchedules}>
+                  <Plus size={16} /> Mehrere Termine
+                </button>
+                <button className="export-button">
+                  <FileEdit size={16} /> CSV Export
+                </button>
+              </div>
+            </div>
+
+            <div className="table-container">
+              <div className="table-header">
+                <div className="column-20">Region</div>
+                <div className="column-20">Abfallart</div>
+                <div className="column-20">Datum</div>
+                <div className="column-20">Benachrichtigung</div>
+                <div className="column-20">Aktionen</div>
+              </div>
+
+              <div className="table-body">
+                {schedules.map(schedule => {
+                  const wasteType = getWasteTypeInfo(schedule.wasteTypeId);
+                  
+                  return (
+                    <div className="table-row" key={schedule.id}>
+                      <div className="column-20">{getRegionName(schedule.regionId)}</div>
+                      <div className="column-20">
+                        <div className="waste-type-indicator">
+                          <div className="waste-color" style={{ backgroundColor: wasteType.color }}></div>
+                          <span>{wasteType.name}</span>
+                        </div>
+                      </div>
+                      <div className="column-20">{formatDate(schedule.date)}</div>
+                      <div className="column-20">
+                        {schedule.notificationSent ? (
+                          <span className="notification-status sent">Gesendet</span>
+                        ) : (
+                          <button 
+                            className="send-notification-btn"
+                            onClick={() => sendNotification(schedule.id)}
+                          >
+                            Senden
+                          </button>
+                        )}
+                      </div>
+                      <div className="column-20 actions">
+                        <button className="action-btn edit" title="Bearbeiten" onClick={() => handleEdit('schedule', schedule)}>
+                          <Edit size={16} />
+                        </button>
+                        <button className="action-btn delete" title="Löschen" onClick={() => handleDelete('schedule', schedule.id)}>
+                          <Trash size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {isAddingItem && (
+              <div className="modal-overlay">
+                <div className="modal">
+                  <div className="modal-header">
+                    <h2>{isEditingItem ? 'Abholtermin bearbeiten' : 'Neuer Abholtermin'}</h2>
+                    <button className="close-btn" onClick={resetForm}>
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="form-group">
+                      <label htmlFor="regionId">Region</label>
+                      <select
+                        id="regionId"
+                        name="regionId"
+                        value={formData.regionId}
+                        onChange={handleFormChange}
+                        required
+                      >
+                        <option value="" disabled>Region auswählen</option>
+                        {regions.map(region => (
+                          <option key={region.id} value={region.id}>{region.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="wasteTypeId">Abfallart</label>
+                      <select
+                        id="wasteTypeId"
+                        name="wasteTypeId"
+                        value={formData.wasteTypeId}
+                        onChange={handleFormChange}
+                        required
+                      >
+                        <option value="" disabled>Abfallart auswählen</option>
+                        {wasteTypes.map(wasteType => (
+                          <option key={wasteType.id} value={wasteType.id}>{wasteType.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="date">Datum</label>
+                      <input
+                        type="date"
+                        id="date"
+                        name="date"
+                        value={formData.date.toISOString().split('T')[0]}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group checkbox-group">
+                      <input
+                        type="checkbox"
+                        id="notificationSent"
+                        name="notificationSent"
+                        checked={formData.notificationSent}
+                        onChange={handleFormChange}
+                      />
+                      <label htmlFor="notificationSent">Benachrichtigung gesendet</label>
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button className="cancel-btn" onClick={resetForm}>
+                      Abbrechen
+                    </button>
+                    <button 
+                      className="save-btn" 
+                      onClick={() => handleAddOrEdit('schedule')}
+                      disabled={!formData.regionId || !formData.wasteTypeId}
+                    >
+                      Speichern
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Kalenderansicht */}
+        {activeTab === 'calendar' && (
+          <div className="calendar-tab">
+            <div className="calendar-container">
+              <CalendarView />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
