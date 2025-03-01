@@ -26,8 +26,12 @@ externalPort = 3000
 localPort = 5175
 externalPort = 3001
 
+[[ports]]
+localPort = 5176
+externalPort = 3002
+
 [workflows]
-runButton = "Start API and Frontend"
+runButton = "Start API und Frontend"
 
 [[workflows.workflow]]
 name = "API Server"
@@ -52,3 +56,11 @@ author = 40103754
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npx ts-node src/api/startServer.ts & npm run dev"
+
+[[workflows.workflow]]
+name = "Start API und Frontend"
+author = 40103754
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev & node src/api/startServer.ts"
