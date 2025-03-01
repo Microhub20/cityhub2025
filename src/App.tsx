@@ -102,6 +102,9 @@ interface Zeile {
   position?: number;
 }
 
+// import React und useEffect
+import React, { useState, useEffect } from 'react';
+
 // Startseite Bearbeiten Komponente
 const StartseiteBearbeiten = () => {
   const [zeilen, setZeilen] = useState<Zeile[]>([
