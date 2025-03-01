@@ -1861,21 +1861,70 @@ const SettingsContent = () => {
     syncStatus: '',
     syncedItems: 0
   });
-
+  
+  // Mängelmelder-Kategorien Status
+  const [activeTab, setActiveTab] = useState('api');
+  const [categories, setCategories] = useState([
+    {
+      id: 1,
+      name: 'Schadensmeldungen',
+      isExpanded: true,
+      subCategories: [
+        { id: 101, name: 'Straßenschäden' },
+        { id: 102, name: 'Beleuchtung' },
+        { id: 103, name: 'Müllablagerung' },
+        { id: 104, name: 'Sonstiges' },
+        { id: 105, name: 'Vandalismus' },
+      ]
+    },
+    {
+      id: 2,
+      name: 'Verbesserung & Lob',
+      isExpanded: false,
+      subCategories: []
+    },
+    {
+      id: 3,
+      name: 'Sonstiges',
+      isExpanded: false,
+      subCategories: []
+    }
+  ]);
+  
+  // Bearbeitungsmodus
+  const [editMode, setEditMode] = useState({
+    isEditing: false,
+    itemType: null, // 'category' oder 'subcategory'
+    itemId: null,
+    itemName: '',
+    parentId: null
+  });
+  
   // Lädt die API-ID beim Initialisieren
   useEffect(() => {
     // Aus dem localStorage laden
     const savedApiKey = localStorage.getItem('cityhubApiKey') || '';
     const savedAppUrl = localStorage.getItem('cityhubAppUrl') || 'https://cityhub-app.riccosauter.repl.co';
+    const savedCategories = localStorage.getItem('cityhubCategories');
+    
     setApiKey(savedApiKey);
     setAppUrl(savedAppUrl);
+    
+    // Gespeicherte Kategorien laden, falls vorhanden
+    if (savedCategories) {
+      try {
+        setCategories(JSON.parse(savedCategories));
+      } catch (e) {
+        console.error('Fehler beim Laden der Kategorien:', e);
+      }
+    }
     
     // Wenn ein API-Key vorhanden ist, Status prüfen
     if (savedApiKey) {
       verifyApiKey(savedApiKey, savedAppUrl);
     }
   }, []);
-
+  
   // API-Key überprüfen
   const verifyApiKey = async (key, url) => {
     setIsVerifying(true);
@@ -2059,166 +2108,496 @@ const SettingsContent = () => {
       setIsSaving(false);
     }, 3000);
   };
+  
+  // Kategorie-Funktionen
+  const toggleCategoryExpand = (categoryId) => {
+    setCategories(categories.map(cat => 
+      cat.id === categoryId ? { ...cat, isExpanded: !cat.isExpanded } : cat
+    ));
+  };
+  
+  const addCategory = () => {
+    setEditMode({
+      isEditing: true,
+      itemType: 'category',
+      itemId: null,
+      itemName: '',
+      parentId: null
+    });
+  };
+  
+  const addSubCategory = (parentId) => {
+    setEditMode({
+      isEditing: true,
+      itemType: 'subcategory',
+      itemId: null,
+      itemName: '',
+      parentId
+    });
+  };
+  
+  const editCategory = (category) => {
+    setEditMode({
+      isEditing: true,
+      itemType: 'category',
+      itemId: category.id,
+      itemName: category.name,
+      parentId: null
+    });
+  };
+  
+  const editSubCategory = (subCategory, parentId) => {
+    setEditMode({
+      isEditing: true,
+      itemType: 'subcategory',
+      itemId: subCategory.id,
+      itemName: subCategory.name,
+      parentId
+    });
+  };
+  
+  const deleteCategory = (categoryId) => {
+    if (window.confirm('Möchten Sie diese Kategorie wirklich löschen?')) {
+      setCategories(categories.filter(cat => cat.id !== categoryId));
+      saveCategories(categories.filter(cat => cat.id !== categoryId));
+    }
+  };
+  
+  const deleteSubCategory = (parentId, subCategoryId) => {
+    if (window.confirm('Möchten Sie diese Unterkategorie wirklich löschen?')) {
+      const updatedCategories = categories.map(cat => {
+        if (cat.id === parentId) {
+          return {
+            ...cat,
+            subCategories: cat.subCategories.filter(sub => sub.id !== subCategoryId)
+          };
+        }
+        return cat;
+      });
+      
+      setCategories(updatedCategories);
+      saveCategories(updatedCategories);
+    }
+  };
+  
+  const handleEditChange = (e) => {
+    setEditMode({
+      ...editMode,
+      itemName: e.target.value
+    });
+  };
+  
+  const saveEditChanges = () => {
+    if (!editMode.itemName.trim()) return;
+    
+    let updatedCategories;
+    
+    if (editMode.itemType === 'category') {
+      if (editMode.itemId) {
+        // Kategorie bearbeiten
+        updatedCategories = categories.map(cat => 
+          cat.id === editMode.itemId ? { ...cat, name: editMode.itemName } : cat
+        );
+      } else {
+        // Neue Kategorie
+        const newId = Math.max(0, ...categories.map(cat => cat.id)) + 1;
+        updatedCategories = [
+          ...categories,
+          {
+            id: newId,
+            name: editMode.itemName,
+            isExpanded: false,
+            subCategories: []
+          }
+        ];
+      }
+    } else if (editMode.itemType === 'subcategory') {
+      if (editMode.itemId) {
+        // Unterkategorie bearbeiten
+        updatedCategories = categories.map(cat => {
+          if (cat.id === editMode.parentId) {
+            return {
+              ...cat,
+              subCategories: cat.subCategories.map(sub => 
+                sub.id === editMode.itemId ? { ...sub, name: editMode.itemName } : sub
+              )
+            };
+          }
+          return cat;
+        });
+      } else {
+        // Neue Unterkategorie
+        updatedCategories = categories.map(cat => {
+          if (cat.id === editMode.parentId) {
+            const newSubId = Math.max(0, ...cat.subCategories.map(sub => sub.id), 100) + 1;
+            return {
+              ...cat,
+              subCategories: [
+                ...cat.subCategories,
+                { id: newSubId, name: editMode.itemName }
+              ]
+            };
+          }
+          return cat;
+        });
+      }
+    }
+    
+    setCategories(updatedCategories);
+    saveCategories(updatedCategories);
+    setEditMode({ isEditing: false, itemType: null, itemId: null, itemName: '', parentId: null });
+  };
+  
+  const cancelEdit = () => {
+    setEditMode({ isEditing: false, itemType: null, itemId: null, itemName: '', parentId: null });
+  };
+  
+  const saveCategories = (updatedCategories) => {
+    localStorage.setItem('cityhubCategories', JSON.stringify(updatedCategories));
+  };
+  
+  const saveAllCategories = () => {
+    saveCategories(categories);
+    
+    setSaveStatus({
+      type: 'success',
+      message: 'Kategorien erfolgreich gespeichert'
+    });
+    
+    setTimeout(() => {
+      setSaveStatus({ type: '', message: '' });
+    }, 3000);
+  };
 
   return (
     <div className="settings-content">
       <div className="settings-header">
         <h1>Einstellungen</h1>
-      </div>
-      
-      <div className="settings-section">
-        <h2>API-Konfiguration</h2>
-        <p className="settings-description">
-          Geben Sie Ihren CityHub API-Key ein, um diesen Admin mit der entsprechenden App zu verknüpfen.
-        </p>
-        
-        <div className="form-group">
-          <label htmlFor="api-key">CityHub API-Key</label>
-          <input
-            type="text"
-            id="api-key"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Geben Sie Ihren API-Key ein"
-            className="settings-input"
-          />
-          <small className="settings-hint">
-            Demo API-Keys: "test-api-key-123" oder "app-api-key-456"
-          </small>
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="app-url">CityHub App URL</label>
-          <input
-            type="text"
-            id="app-url"
-            value={appUrl}
-            onChange={(e) => setAppUrl(e.target.value)}
-            placeholder="https://cityhub-app.riccosauter.repl.co"
-            className="settings-input"
-          />
-          <small className="settings-hint">
-            URL der CityHub-App, zu der eine Verbindung hergestellt werden soll
-          </small>
-        </div>
-        
-        {saveStatus.message && (
-          <div className={`status-message ${saveStatus.type}`}>
-            {saveStatus.message}
-          </div>
-        )}
-        
-        <div className="settings-actions">
+        <div className="settings-tabs">
           <button 
-            className="save-settings-btn" 
-            onClick={saveApiKey}
-            disabled={isSaving || isVerifying}
+            className={`settings-tab ${activeTab === 'api' ? 'active' : ''}`}
+            onClick={() => setActiveTab('api')}
           >
-            {isSaving ? 'Wird gespeichert...' : isVerifying ? 'Wird überprüft...' : 'Einstellungen speichern'}
+            API-Konfiguration
+          </button>
+          <button 
+            className={`settings-tab ${activeTab === 'categories' ? 'active' : ''}`}
+            onClick={() => setActiveTab('categories')}
+          >
+            Mängelmelder-Kategorien
           </button>
         </div>
       </div>
       
-      <div className="settings-section">
-        <h2>Verbindungsstatus</h2>
-        <div className="connection-status">
-          <div className="status-indicator">
-            <span className={`status-dot ${connectionStatus.isConnected ? 'connected' : 'disconnected'}`}></span>
-            <span className="status-text">
-              {connectionStatus.message}
-            </span>
-          </div>
-          {connectionStatus.isConnected && apiKey && (
-            <div className="api-id-display">
-              API-Key: {apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
+      {activeTab === 'api' ? (
+        <>
+          <div className="settings-section">
+            <h2>API-Konfiguration</h2>
+            <p className="settings-description">
+              Geben Sie Ihren CityHub API-Key ein, um diesen Admin mit der entsprechenden App zu verknüpfen.
+            </p>
+            
+            <div className="form-group">
+              <label htmlFor="api-key">CityHub API-Key</label>
+              <input
+                type="text"
+                id="api-key"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Geben Sie Ihren API-Key ein"
+                className="settings-input"
+              />
+              <small className="settings-hint">
+                Demo API-Keys: "test-api-key-123" oder "app-api-key-456"
+              </small>
             </div>
-          )}
-          
-          {syncToken && (
-            <div className="sync-token-info">
-              <h3>Sync-Token</h3>
-              <p>Dieses Token wird für Synchronisierungsvorgänge verwendet:</p>
-              <div className="token-display">
-                <code>{syncToken.substring(0, 12)}...{syncToken.substring(syncToken.length - 12)}</code>
+            
+            <div className="form-group">
+              <label htmlFor="app-url">CityHub App URL</label>
+              <input
+                type="text"
+                id="app-url"
+                value={appUrl}
+                onChange={(e) => setAppUrl(e.target.value)}
+                placeholder="https://cityhub-app.riccosauter.repl.co"
+                className="settings-input"
+              />
+              <small className="settings-hint">
+                URL der CityHub-App, zu der eine Verbindung hergestellt werden soll
+              </small>
+            </div>
+            
+            {saveStatus.message && (
+              <div className={`status-message ${saveStatus.type}`}>
+                {saveStatus.message}
               </div>
-              <p className="token-expiry">Gültig für 60 Minuten</p>
+            )}
+            
+            <div className="settings-actions">
+              <button 
+                className="save-settings-btn" 
+                onClick={saveApiKey}
+                disabled={isSaving || isVerifying}
+              >
+                {isSaving ? 'Wird gespeichert...' : isVerifying ? 'Wird überprüft...' : 'Einstellungen speichern'}
+              </button>
+            </div>
+          </div>
+          
+          <div className="settings-section">
+            <h2>Verbindungsstatus</h2>
+            <div className="connection-status">
+              <div className="status-indicator">
+                <span className={`status-dot ${connectionStatus.isConnected ? 'connected' : 'disconnected'}`}></span>
+                <span className="status-text">
+                  {connectionStatus.message}
+                </span>
+              </div>
+              {connectionStatus.isConnected && apiKey && (
+                <div className="api-id-display">
+                  API-Key: {apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
+                </div>
+              )}
               
-              {connectionStatus.isConnected && (
-                <div className="sync-actions">
-                  <button 
-                    className="sync-btn" 
-                    onClick={startSync}
-                    disabled={syncResults.syncStatus === 'Synchronisierung läuft...'}
-                  >
-                    {syncResults.syncStatus === 'Synchronisierung läuft...' ? 'Synchronisierung läuft...' : 'Jetzt synchronisieren'}
-                  </button>
+              {syncToken && (
+                <div className="sync-token-info">
+                  <h3>Sync-Token</h3>
+                  <p>Dieses Token wird für Synchronisierungsvorgänge verwendet:</p>
+                  <div className="token-display">
+                    <code>{syncToken.substring(0, 12)}...{syncToken.substring(syncToken.length - 12)}</code>
+                  </div>
+                  <p className="token-expiry">Gültig für 60 Minuten</p>
                   
-                  {syncResults.lastSync && (
-                    <div className="sync-status">
-                      <div className="sync-status-label">Status:</div>
-                      <div className="sync-status-value">{syncResults.syncStatus}</div>
-                      <div className="sync-status-label">Letzte Synchronisierung:</div>
-                      <div className="sync-status-value">
-                        {syncResults.lastSync.toLocaleString('de-DE')}
-                      </div>
-                      <div className="sync-status-label">Synchronisierte Elemente:</div>
-                      <div className="sync-status-value">{syncResults.syncedItems}</div>
+                  {connectionStatus.isConnected && (
+                    <div className="sync-actions">
+                      <button 
+                        className="sync-btn" 
+                        onClick={startSync}
+                        disabled={syncResults.syncStatus === 'Synchronisierung läuft...'}
+                      >
+                        {syncResults.syncStatus === 'Synchronisierung läuft...' ? 'Synchronisierung läuft...' : 'Jetzt synchronisieren'}
+                      </button>
+                      
+                      {syncResults.lastSync && (
+                        <div className="sync-status">
+                          <div className="sync-status-label">Status:</div>
+                          <div className="sync-status-value">{syncResults.syncStatus}</div>
+                          <div className="sync-status-label">Letzte Synchronisierung:</div>
+                          <div className="sync-status-value">
+                            {syncResults.lastSync.toLocaleString('de-DE')}
+                          </div>
+                          <div className="sync-status-label">Synchronisierte Elemente:</div>
+                          <div className="sync-status-value">{syncResults.syncedItems}</div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
-      
-      <div className="settings-section">
-        <h2>API-Endpunkte</h2>
-        <div className="api-endpoints">
-          <h3>Content API</h3>
-          <ul className="endpoint-list">
-            <li><code>GET /api/content</code> - Alle Inhalte abrufen</li>
-            <li><code>GET /api/content/:id</code> - Einzelnen Inhalt abrufen</li>
-            <li><code>POST /api/content</code> - Neuen Inhalt erstellen (benötigt Sync-Token)</li>
-            <li><code>PUT /api/content/:id</code> - Inhalt aktualisieren (benötigt Sync-Token)</li>
-            <li><code>DELETE /api/content/:id</code> - Inhalt löschen (benötigt Sync-Token)</li>
-          </ul>
-          
-          <h3>Mängelmeldungen API</h3>
-          <ul className="endpoint-list">
-            <li><code>GET /api/maengel</code> - Alle Mängelmeldungen abrufen</li>
-            <li><code>GET /api/maengel/:id</code> - Einzelne Mängelmeldung abrufen</li>
-            <li><code>POST /api/maengel</code> - Neue Mängelmeldung erstellen (öffentlich)</li>
-            <li><code>PUT /api/maengel/:id</code> - Mängelmeldung aktualisieren (benötigt Sync-Token)</li>
-            <li><code>DELETE /api/maengel/:id</code> - Mängelmeldung löschen (benötigt Sync-Token)</li>
-          </ul>
-          
-          <h3>Synchronisierungs-API</h3>
-          <ul className="endpoint-list">
-            <li><code>GET /api/sync/status</code> - Status der Synchronisierung abrufen</li>
-            <li><code>POST /api/sync/start</code> - Synchronisierung starten (benötigt Sync-Token)</li>
-          </ul>
-        </div>
-      </div>
-      
-      <div className="settings-section">
-        <h2>CityHub-App Details</h2>
-        <div className="app-details">
-          <div className="app-url-display">
-            <span className="detail-label">App-URL:</span>
-            <a href={appUrl} target="_blank" rel="noopener noreferrer" className="app-link">
-              {appUrl}
-            </a>
           </div>
-          <div className="app-info">
-            <p>
-              Die CityHub-App ist eine mobile Anwendung, die Bürgern Zugang zu städtischen Diensten, 
-              Informationen und Interaktionsmöglichkeiten bietet. Über die API können Inhalte 
-              synchronisiert und Mängelmeldungen verwaltet werden.
+          
+          <div className="settings-section">
+            <h2>API-Endpunkte</h2>
+            <div className="api-endpoints">
+              <h3>Content API</h3>
+              <ul className="endpoint-list">
+                <li><code>GET /api/content</code> - Alle Inhalte abrufen</li>
+                <li><code>GET /api/content/:id</code> - Einzelnen Inhalt abrufen</li>
+                <li><code>POST /api/content</code> - Neuen Inhalt erstellen (benötigt Sync-Token)</li>
+                <li><code>PUT /api/content/:id</code> - Inhalt aktualisieren (benötigt Sync-Token)</li>
+                <li><code>DELETE /api/content/:id</code> - Inhalt löschen (benötigt Sync-Token)</li>
+              </ul>
+              
+              <h3>Mängelmeldungen API</h3>
+              <ul className="endpoint-list">
+                <li><code>GET /api/maengel</code> - Alle Mängelmeldungen abrufen</li>
+                <li><code>GET /api/maengel/:id</code> - Einzelne Mängelmeldung abrufen</li>
+                <li><code>POST /api/maengel</code> - Neue Mängelmeldung erstellen (öffentlich)</li>
+                <li><code>PUT /api/maengel/:id</code> - Mängelmeldung aktualisieren (benötigt Sync-Token)</li>
+                <li><code>DELETE /api/maengel/:id</code> - Mängelmeldung löschen (benötigt Sync-Token)</li>
+              </ul>
+              
+              <h3>Synchronisierungs-API</h3>
+              <ul className="endpoint-list">
+                <li><code>GET /api/sync/status</code> - Status der Synchronisierung abrufen</li>
+                <li><code>POST /api/sync/start</code> - Synchronisierung starten (benötigt Sync-Token)</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="settings-section">
+            <h2>CityHub-App Details</h2>
+            <div className="app-details">
+              <div className="app-url-display">
+                <span className="detail-label">App-URL:</span>
+                <a href={appUrl} target="_blank" rel="noopener noreferrer" className="app-link">
+                  {appUrl}
+                </a>
+              </div>
+              <div className="app-info">
+                <p>
+                  Die CityHub-App ist eine mobile Anwendung, die Bürgern Zugang zu städtischen Diensten, 
+                  Informationen und Interaktionsmöglichkeiten bietet. Über die API können Inhalte 
+                  synchronisiert und Mängelmeldungen verwaltet werden.
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="settings-section">
+          <div className="categories-header">
+            <h2>Mängelmelder-Kategorien</h2>
+            <p className="settings-description">
+              Verwalten Sie die Kategorien und Unterkategorien für den Mängelmelder. Diese Kategorien werden in der App zur Verfügung gestellt.
             </p>
           </div>
+          
+          <div className="categories-manager">
+            {categories.map(category => (
+              <div key={category.id} className="category-item">
+                <div className="category-header">
+                  <button 
+                    className="toggle-button"
+                    onClick={() => toggleCategoryExpand(category.id)}
+                  >
+                    {category.isExpanded ? (
+                      <ChevronDown size={20} />
+                    ) : (
+                      <ChevronDown size={20} style={{ transform: 'rotate(-90deg)' }} />
+                    )}
+                  </button>
+                  <span className="category-name">{category.name}</span>
+                  <div className="category-actions">
+                    <button 
+                      className="edit-button"
+                      onClick={() => editCategory(category)}
+                      aria-label="Kategorie bearbeiten"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button 
+                      className="delete-button"
+                      onClick={() => deleteCategory(category.id)}
+                      aria-label="Kategorie löschen"
+                    >
+                      <Trash size={16} />
+                    </button>
+                  </div>
+                </div>
+                
+                {category.isExpanded && (
+                  <div className="subcategories-list">
+                    {category.subCategories.map(subCategory => (
+                      <div key={subCategory.id} className="subcategory-item">
+                        <div className="subcategory-content">
+                          <span className="subcategory-dash">-</span>
+                          <span className="subcategory-name">{subCategory.name}</span>
+                          <div className="subcategory-actions">
+                            <button 
+                              className="edit-button"
+                              onClick={() => editSubCategory(subCategory, category.id)}
+                              aria-label="Unterkategorie bearbeiten"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              className="delete-button"
+                              onClick={() => deleteSubCategory(category.id, subCategory.id)}
+                              aria-label="Unterkategorie löschen"
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="add-subcategory">
+                      <button 
+                        className="add-button"
+                        onClick={() => addSubCategory(category.id)}
+                      >
+                        <Plus size={16} />
+                        Hinzufügen
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            <div className="add-category">
+              <button 
+                className="add-category-button"
+                onClick={addCategory}
+              >
+                <Plus size={16} />
+                Hinzufügen
+              </button>
+            </div>
+            
+            <div className="save-categories">
+              <button 
+                className="save-categories-button"
+                onClick={saveAllCategories}
+              >
+                Speichern
+              </button>
+            </div>
+            
+            {saveStatus.message && (
+              <div className={`status-message ${saveStatus.type}`}>
+                {saveStatus.message}
+              </div>
+            )}
+          </div>
+          
+          {/* Edit Modal */}
+          {editMode.isEditing && (
+            <div className="modal-overlay">
+              <div className="modal edit-category-modal">
+                <div className="modal-header">
+                  <h3>
+                    {editMode.itemType === 'category' 
+                      ? (editMode.itemId ? 'Kategorie bearbeiten' : 'Neue Kategorie') 
+                      : (editMode.itemId ? 'Unterkategorie bearbeiten' : 'Neue Unterkategorie')
+                    }
+                  </h3>
+                  <button className="close-button" onClick={cancelEdit}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <div className="form-group">
+                    <label htmlFor="category-name">Name</label>
+                    <input
+                      type="text"
+                      id="category-name"
+                      value={editMode.itemName}
+                      onChange={handleEditChange}
+                      placeholder={editMode.itemType === 'category' ? 'Kategoriename' : 'Unterkategoriename'}
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="cancel-button" onClick={cancelEdit}>
+                    Abbrechen
+                  </button>
+                  <button 
+                    className="save-button" 
+                    onClick={saveEditChanges}
+                    disabled={!editMode.itemName.trim()}
+                  >
+                    Speichern
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };
