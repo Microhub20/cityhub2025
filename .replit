@@ -13,7 +13,7 @@ language = "nodejs"
 deploymentTarget = "static"
 build = ["sh", "-c", "npm run build"]
 publicDir = "dist"
-run = ["sh", "-c", "npm run preview"]
+run = ["sh", "-c", "npx vite preview --host 0.0.0.0 --port 3000"]
 
 [[ports]]
 localPort = 5173
