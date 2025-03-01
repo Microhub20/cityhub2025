@@ -830,9 +830,8 @@ const MaengelContent = () => {
 
               <div className="form-group">
                 <label htmlFor="location">Standort</label>
-                <input
-                  type="text"
-                  id"location"
+                <input                  type="text"
+                  id="location"
                   name="location"
                   value={maengelFormData.location || ''}
                   onChange={handleMaengelFormChange}
