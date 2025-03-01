@@ -427,6 +427,52 @@ const AppsManagementContent = () => {
 
 // Mängelmeldung-Komponente
 const MaengelContent = () => {
+  const [editingMaengel, setEditingMaengel] = useState(null);
+  const [maengelFormData, setMaengelFormData] = useState({
+    id: null,
+    title: '',
+    image: '',
+    status: 'aktiv',
+    location: '',
+    description: '',
+    response: '',
+    reporterName: '',
+    reporterEmail: '',
+    category: 'Schadensmeldungen',
+    subCategory: 'Straßenschäden',
+    createdAt: new Date()
+  });
+  const [mapTab, setMapTab] = useState('karte');
+  // Handler für das Öffnen des Bearbeitungsmodals
+  const openEditModal = (maengel) => {
+    setEditingMaengel(maengel);
+    setMaengelFormData({
+      ...maengel
+    });
+  };
+
+  // Handler für Änderungen an Formularfeldern
+  const handleMaengelFormChange = (e) => {
+    const { name, value } = e.target;
+    setMaengelFormData({
+      ...maengelFormData,
+      [name]: value
+    });
+  };
+
+  // Handler für das Speichern der Änderungen
+  const handleMaengelSave = (e) => {
+    e.preventDefault();
+    
+    // Aktualisierte Liste erstellen
+    const updatedList = maengelList.map(maengel => 
+      maengel.id === maengelFormData.id ? maengelFormData : maengel
+    );
+    
+    setMaengelList(updatedList);
+    setEditingMaengel(null);
+  };
+
   const [maengelList, setMaengelList] = useState([
     {
       id: 1,
@@ -434,6 +480,7 @@ const MaengelContent = () => {
       image: 'https://images.unsplash.com/photo-1573511860302-28c11ff2c879?q=80&w=200',
       status: 'aktiv',
       location: 'Prelitz',
+      description: 'Die Straßenbeleuchtung in Prelitz ist seit mehreren Tagen ausgefallen. Mehrere Laternen in der Hauptstraße funktionieren nicht mehr.',
       createdAt: new Date('2023-06-15')
     },
     {
@@ -441,7 +488,12 @@ const MaengelContent = () => {
       title: 'Gulli verschmiert',
       image: 'https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=200',
       status: 'aktiv',
-      location: 'Innenstadt',
+      location: '95359 Kasendorf Simonweg kurz vor dem Festplatz',
+      description: 'Der Gulli funktioniert nicht mehr, weil anscheinend Farbeimer und Baumaterialien darin geleert wurden.',
+      reporterName: 'Max Mustermann',
+      reporterEmail: 'max@example.com',
+      category: 'Schadensmeldungen',
+      subCategory: 'Straßenschäden',
       createdAt: new Date('2023-06-18')
     },
     {
@@ -490,7 +542,7 @@ const MaengelContent = () => {
               )}
             </div>
             <div className="column-aktionen">
-              <button className="action-btn edit" title="Bearbeiten">
+              <button className="action-btn edit" title="Bearbeiten" onClick={() => openEditModal(maengel)}>
                 <Edit size={18} />
               </button>
               <button className="action-btn delete" title="Löschen">
@@ -500,6 +552,170 @@ const MaengelContent = () => {
           </div>
         ))}
       </div>
+
+      {editingMaengel && (
+        <div className="modal-overlay">
+          <div className="modal maengel-modal">
+            <div className="modal-header">
+              <h2>Ticket Bearbeiten</h2>
+              <button className="close-btn" onClick={() => setEditingMaengel(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleMaengelSave}>
+              <div className="form-group checkbox-group">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  name="isActive"
+                  checked={maengelFormData.status === 'aktiv'}
+                  onChange={(e) => setMaengelFormData({
+                    ...maengelFormData,
+                    status: e.target.checked ? 'aktiv' : 'inaktiv'
+                  })}
+                />
+                <label htmlFor="isActive">Mängelmeldung aktiv</label>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="title">Titel</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={maengelFormData.title}
+                  onChange={handleMaengelFormChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <div className="image-preview">
+                  <img src={maengelFormData.image} alt={maengelFormData.title} />
+                </div>
+                <div className="image-upload">
+                  <button type="button" className="upload-btn">
+                    Bild ersetzen
+                  </button>
+                  <span className="upload-info">Keine ausgewählt</span>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="description">Beschreibung</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={maengelFormData.description || ''}
+                  onChange={handleMaengelFormChange}
+                  rows={5}
+                ></textarea>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="response">Rückmeldung</label>
+                <textarea
+                  id="response"
+                  name="response"
+                  value={maengelFormData.response || ''}
+                  onChange={handleMaengelFormChange}
+                  rows={3}
+                ></textarea>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="location">Standort</label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={maengelFormData.location || ''}
+                  onChange={handleMaengelFormChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reporterName">Name des Melders</label>
+                <input
+                  type="text"
+                  id="reporterName"
+                  name="reporterName"
+                  value={maengelFormData.reporterName || ''}
+                  onChange={handleMaengelFormChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reporterEmail">E-Mail des Melders</label>
+                <input
+                  type="email"
+                  id="reporterEmail"
+                  name="reporterEmail"
+                  value={maengelFormData.reporterEmail || ''}
+                  onChange={handleMaengelFormChange}
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="category">Kategorie</label>
+                  <select
+                    id="category"
+                    name="category"
+                    value={maengelFormData.category || 'Schadensmeldungen'}
+                    onChange={handleMaengelFormChange}
+                  >
+                    <option value="Schadensmeldungen">Schadensmeldungen</option>
+                    <option value="Reinigung">Reinigung</option>
+                    <option value="Beleuchtung">Beleuchtung</option>
+                    <option value="Sonstiges">Sonstiges</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="subCategory">Sub-Kategorie</label>
+                  <select
+                    id="subCategory"
+                    name="subCategory"
+                    value={maengelFormData.subCategory || 'Straßenschäden'}
+                    onChange={handleMaengelFormChange}
+                  >
+                    <option value="Straßenschäden">Straßenschäden</option>
+                    <option value="Gehwegschäden">Gehwegschäden</option>
+                    <option value="Schilder">Schilder</option>
+                    <option value="Sonstiges">Sonstiges</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="map-container">
+                <div className="map-tabs">
+                  <button type="button" className={`map-tab ${mapTab === 'karte' ? 'active' : ''}`} onClick={() => setMapTab('karte')}>Karte</button>
+                  <button type="button" className={`map-tab ${mapTab === 'satellit' ? 'active' : ''}`} onClick={() => setMapTab('satellit')}>Satellit</button>
+                </div>
+                <div className="map-placeholder">
+                  <div className="map-image">
+                    {/* Karte würde hier eingebunden werden */}
+                    <img src="https://maps.googleapis.com/maps/api/staticmap?center=Kasendorf&zoom=14&size=600x300&key=YOUR_API_KEY" alt="Kartenansicht" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="button" className="cancel-btn" onClick={() => setEditingMaengel(null)}>
+                  Abbrechen
+                </button>
+                <button type="button" className="reset-btn">
+                  Zurücksetzen
+                </button>
+                <button type="submit" className="save-btn">
+                  Speichern
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
