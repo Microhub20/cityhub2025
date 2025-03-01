@@ -233,7 +233,7 @@ const AppsManagementContent = () => {
   };
 
   // Zeile nach oben verschieben
-  const moveZeileUp = (id) => {
+  const moveZeileUp = (id: number) => {
     const index = startseiteZeilen.findIndex(zeile => zeile.id === id);
     if (index <= 0) return;
 
@@ -249,7 +249,7 @@ const AppsManagementContent = () => {
   };
 
   // Zeile nach unten verschieben
-  const moveZeileDown = (id) => {
+  const moveZeileDown = (id: number) => {
     const index = startseiteZeilen.findIndex(zeile => zeile.id === id);
     if (index >= startseiteZeilen.length - 1) return;
 
@@ -289,7 +289,7 @@ const AppsManagementContent = () => {
   };
 
   // Handler für Input-Änderungen
-  const handleChange = (e, id) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number) => {
     const { name, value } = e.target;
     updateZeile(id, { [name]: value });
   };
@@ -1015,14 +1015,14 @@ const MenuEditorContent = () => {
   };
 
   // Ein-/Ausklappen eines Menüpunkts
-  const toggleExpand = (itemId) => {
+  const toggleExpand = (itemId: number) => {
     setMenuItems(menuItems.map(item => 
       item.id === itemId ? {...item, isExpanded: !item.isExpanded} : item
     ));
   };
 
   // Nach oben verschieben
-  const moveItemUp = (itemId) => {
+  const moveItemUp = (itemId: number) => {
     const itemIndex = menuItems.findIndex(item => item.id === itemId);
     if (itemIndex <= 0) return;
 
@@ -1047,7 +1047,7 @@ const MenuEditorContent = () => {
   };
 
   // Nach unten verschieben
-  const moveItemDown = (itemId) => {
+  const moveItemDown = (itemId: number) => {
     const itemIndex = menuItems.findIndex(item => item.id === itemId);
     if (itemIndex >= menuItems.length - 1) return;
 
