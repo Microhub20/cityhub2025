@@ -1844,12 +1844,99 @@ const ArticleEditorContent = ({ item, onClose }) => {
   );
 };
 
-// Einstellungen-Komponente (Platzhalter)
+// Einstellungen-Komponente
 const SettingsContent = () => {
+  const [apiID, setApiID] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
+
+  // Lädt die API-ID beim Initialisieren
+  useEffect(() => {
+    // Hier würde in einer echten Implementierung die API-ID aus dem Backend geladen werden
+    // Für diese Demo verwenden wir einen festen Wert oder speichern im localStorage
+    const savedApiID = localStorage.getItem('githubSyncApiID') || '';
+    setApiID(savedApiID);
+  }, []);
+
+  // Speichert die API-ID
+  const saveApiID = () => {
+    setIsSaving(true);
+    
+    // Simuliere API-Call
+    setTimeout(() => {
+      // Speichere im localStorage für die Demo
+      localStorage.setItem('githubSyncApiID', apiID);
+      
+      setIsSaving(false);
+      setSaveStatus({
+        type: 'success',
+        message: 'API-ID erfolgreich gespeichert'
+      });
+      
+      // Status-Nachricht nach 3 Sekunden ausblenden
+      setTimeout(() => {
+        setSaveStatus({ type: '', message: '' });
+      }, 3000);
+    }, 800);
+  };
+
   return (
     <div className="settings-content">
-      <h1>Einstellungen</h1>
-      <p>Diese Funktion wird in einer zukünftigen Version implementiert.</p>
+      <div className="settings-header">
+        <h1>Einstellungen</h1>
+      </div>
+      
+      <div className="settings-section">
+        <h2>API-Konfiguration</h2>
+        <p className="settings-description">
+          Geben Sie Ihre GithubSync API-ID ein, um diesen Admin mit der entsprechenden App zu verknüpfen.
+        </p>
+        
+        <div className="form-group">
+          <label htmlFor="api-id">GithubSync API-ID</label>
+          <input
+            type="text"
+            id="api-id"
+            value={apiID}
+            onChange={(e) => setApiID(e.target.value)}
+            placeholder="Geben Sie Ihre API-ID ein"
+            className="settings-input"
+          />
+        </div>
+        
+        {saveStatus.message && (
+          <div className={`status-message ${saveStatus.type}`}>
+            {saveStatus.message}
+          </div>
+        )}
+        
+        <div className="settings-actions">
+          <button 
+            className="save-settings-btn" 
+            onClick={saveApiID}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Wird gespeichert...' : 'Einstellungen speichern'}
+          </button>
+        </div>
+      </div>
+      
+      <div className="settings-section">
+        <h2>Verbindungsstatus</h2>
+        <div className="connection-status">
+          <div className="status-indicator">
+            <span className={`status-dot ${apiID ? 'connected' : 'disconnected'}`}></span>
+            <span className="status-text">
+              {apiID ? 'Verbunden mit GithubSync' : 'Nicht verbunden'}
+            </span>
+          </div>
+          {apiID && (
+            <div className="api-id-display">
+              API-ID: {apiID.substring(0, 4)}...{apiID.substring(apiID.length - 4)}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

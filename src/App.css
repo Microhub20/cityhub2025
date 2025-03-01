@@ -10,6 +10,144 @@
   min-width: 120px;
 }
 
+/* Einstellungen Styling */
+.settings-content {
+  padding: 30px;
+  flex: 1;
+}
+
+.settings-header {
+  margin-bottom: 25px;
+}
+
+.settings-header h1 {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.settings-section {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.settings-section h2 {
+  color: #2c3e50;
+  font-weight: 500;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.settings-description {
+  color: #7f8c8d;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.settings-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.save-settings-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.save-settings-btn:hover {
+  background: #2980b9;
+}
+
+.save-settings-btn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.status-message {
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.status-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.connection-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.connected {
+  background: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+.status-dot.disconnected {
+  background: #f44336;
+  box-shadow: 0 0 5px rgba(244, 67, 54, 0.5);
+}
+
+.status-text {
+  font-weight: 500;
+}
+
+.api-id-display {
+  color: #7f8c8d;
+  font-size: 13px;
+  font-family: monospace;
+  background: #f1f1f1;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
 /* Menü-Editor Styling */
 .menu-editor-content {
   padding: 30px;
