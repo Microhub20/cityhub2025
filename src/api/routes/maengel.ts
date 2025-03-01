@@ -1,5 +1,76 @@
 
 import express from 'express';
+import authMiddleware from '../middleware/auth';
+
+const router = express.Router();
+
+// Dummy-Daten für Entwicklungszwecke
+const maengelItems = [
+  { 
+    id: 1, 
+    title: 'Straßenschaden', 
+    description: 'Schlagloch in der Hauptstraße', 
+    status: 'aktiv',
+    location: 'Hauptstraße 12',
+    createdAt: new Date('2023-06-15')
+  },
+  { 
+    id: 2, 
+    title: 'Defekte Straßenlaterne', 
+    description: 'Laterne flackert seit mehreren Tagen', 
+    status: 'aktiv',
+    location: 'Parkplatz Bahnhof',
+    createdAt: new Date('2023-06-18')
+  }
+];
+
+// GET /api/maengel - Alle Mängelmeldungen abrufen
+router.get('/', (req, res) => {
+  res.json(maengelItems);
+});
+
+// GET /api/maengel/:id - Einzelne Mängelmeldung abrufen
+router.get('/:id', (req, res) => {
+  const item = maengelItems.find(item => item.id === parseInt(req.params.id));
+  if (!item) return res.status(404).json({ error: 'Mängelmeldung nicht gefunden' });
+  res.json(item);
+});
+
+// POST /api/maengel - Neue Mängelmeldung erstellen (öffentlich)
+router.post('/', (req, res) => {
+  const newId = Math.max(...maengelItems.map(item => item.id), 0) + 1;
+  const newItem = { 
+    id: newId, 
+    ...req.body, 
+    status: 'aktiv', 
+    createdAt: new Date() 
+  };
+  maengelItems.push(newItem);
+  res.status(201).json(newItem);
+});
+
+// PUT /api/maengel/:id - Mängelmeldung aktualisieren (benötigt Auth)
+router.put('/:id', authMiddleware, (req, res) => {
+  const itemIndex = maengelItems.findIndex(item => item.id === parseInt(req.params.id));
+  if (itemIndex === -1) return res.status(404).json({ error: 'Mängelmeldung nicht gefunden' });
+  
+  maengelItems[itemIndex] = { ...maengelItems[itemIndex], ...req.body };
+  res.json(maengelItems[itemIndex]);
+});
+
+// DELETE /api/maengel/:id - Mängelmeldung löschen (benötigt Auth)
+router.delete('/:id', authMiddleware, (req, res) => {
+  const itemIndex = maengelItems.findIndex(item => item.id === parseInt(req.params.id));
+  if (itemIndex === -1) return res.status(404).json({ error: 'Mängelmeldung nicht gefunden' });
+  
+  maengelItems.splice(itemIndex, 1);
+  res.status(204).send();
+});
+
+export default router;
+
+
+import express from 'express';
 import { getSyncToken } from '../middleware/auth';
 
 const router = express.Router();

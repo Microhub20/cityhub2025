@@ -1,6 +1,41 @@
 
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
+import bodyParser from 'body-parser';
+import contentRoutes from './routes/content';
+import maengelRoutes from './routes/maengel';
+import authRoutes from './routes/auth';
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(morgan('dev'));
+
+// API-Routen
+app.use('/api/content', contentRoutes);
+app.use('/api/maengel', maengelRoutes);
+app.use('/api/auth', authRoutes);
+
+// Basis-Route für API-Status
+app.get('/api', (req, res) => {
+  res.json({
+    status: 'API ist online',
+    endpoints: [
+      '/api/content',
+      '/api/maengel',
+      '/api/auth'
+    ]
+  });
+});
+
+export default app;
+
+
+import express from 'express';
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 

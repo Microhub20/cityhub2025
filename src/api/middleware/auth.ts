@@ -1,6 +1,34 @@
 
 import { Request, Response, NextFunction } from 'express';
 
+// Gültige API-Keys (im Produktionsbetrieb würde man diese in einer Datenbank speichern)
+const validApiKeys = [
+  'test-api-key-123',
+  'app-api-key-456'
+];
+
+// Middleware zur Überprüfung der Authentifizierung
+const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const apiKey = req.headers['x-api-key'] as string;
+  const syncToken = req.headers['x-sync-token'] as string;
+  
+  // Prüfen, ob API-Key vorhanden und gültig ist
+  if (!apiKey || !validApiKeys.includes(apiKey)) {
+    return res.status(401).json({ error: 'Ungültiger API-Key' });
+  }
+  
+  // In einer Produktionsumgebung würde man hier auch das Sync-Token überprüfen
+  // Für die Demo-Version überspringen wir diesen Schritt
+  
+  // Wenn alles in Ordnung ist, zum nächsten Middleware/Route weitergehen
+  next();
+};
+
+export default authMiddleware;
+
+
+import { Request, Response, NextFunction } from 'express';
+
 // Einfache Middleware zur Überprüfung des API-Keys
 export const checkApiKey = (req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers['x-api-key'] as string;

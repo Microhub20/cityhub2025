@@ -1,5 +1,57 @@
 
 import express from 'express';
+import authMiddleware from '../middleware/auth';
+
+const router = express.Router();
+
+// Dummy-Daten für Entwicklungszwecke
+const contentItems = [
+  { id: 1, title: 'Willkommen', type: 'text', content: 'Willkommen in Tuttlingen!' },
+  { id: 2, title: 'Nachrichten', type: 'news', content: 'Aktuelle Veranstaltungen...' }
+];
+
+// GET /api/content - Alle Inhalte abrufen
+router.get('/', (req, res) => {
+  res.json(contentItems);
+});
+
+// GET /api/content/:id - Einzelnen Inhalt abrufen
+router.get('/:id', (req, res) => {
+  const item = contentItems.find(item => item.id === parseInt(req.params.id));
+  if (!item) return res.status(404).json({ error: 'Inhalt nicht gefunden' });
+  res.json(item);
+});
+
+// POST /api/content - Neuen Inhalt erstellen (benötigt Auth)
+router.post('/', authMiddleware, (req, res) => {
+  const newId = Math.max(...contentItems.map(item => item.id), 0) + 1;
+  const newItem = { id: newId, ...req.body };
+  contentItems.push(newItem);
+  res.status(201).json(newItem);
+});
+
+// PUT /api/content/:id - Inhalt aktualisieren (benötigt Auth)
+router.put('/:id', authMiddleware, (req, res) => {
+  const itemIndex = contentItems.findIndex(item => item.id === parseInt(req.params.id));
+  if (itemIndex === -1) return res.status(404).json({ error: 'Inhalt nicht gefunden' });
+  
+  contentItems[itemIndex] = { ...contentItems[itemIndex], ...req.body };
+  res.json(contentItems[itemIndex]);
+});
+
+// DELETE /api/content/:id - Inhalt löschen (benötigt Auth)
+router.delete('/:id', authMiddleware, (req, res) => {
+  const itemIndex = contentItems.findIndex(item => item.id === parseInt(req.params.id));
+  if (itemIndex === -1) return res.status(404).json({ error: 'Inhalt nicht gefunden' });
+  
+  contentItems.splice(itemIndex, 1);
+  res.status(204).send();
+});
+
+export default router;
+
+
+import express from 'express';
 import { getSyncToken } from '../middleware/auth';
 
 const router = express.Router();
