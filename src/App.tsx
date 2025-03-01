@@ -159,19 +159,23 @@ const AppsManagementContent = () => {
   const [startseiteZeilen, setStartseiteZeilen] = useState([
     { 
       id: 1, 
-      typ: 'Auftritt-Kategorie', 
+      typ: 'Mehrfachzeile', 
+      subTyp: 'Auftritt-Kategorie',
       titel: 'Rathaus Kasendorf', 
       kategorieId: '1234',
       bild: 'https://images.unsplash.com/photo-1592965025398-f51b88f696fb?q=80&w=600',
-      position: 1
+      position: 1,
+      url: ''
     },
     { 
       id: 2, 
       typ: 'Auftritt-Kategorie', 
+      subTyp: 'Auftritt-Kategorie',
       titel: 'Sonnentempel', 
       kategorieId: '1234',
       bild: 'https://images.unsplash.com/photo-1594284937520-e27ea0a16fb9?q=80&w=600',
-      position: 2
+      position: 2,
+      url: ''
     }
   ]);
 
@@ -347,17 +351,37 @@ const AppsManagementContent = () => {
                 <div className="spalten-anzahl">2</div>
               </div>
 
-              <div className="form-group mt-3">
-                <label>Typ:</label>
-                <select 
-                  name="typ"
-                  value="Auftritt-Kategorie"
-                  onChange={(e) => {}}
-                  className="input-dropdown"
-                >
-                  <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
-                </select>
-              </div>
+              {aktuelleZeile.typ === "Mehrfachzeile" && (
+                <div className="form-group mt-3">
+                  <label>Typ:</label>
+                  <select 
+                    name="subTyp"
+                    value={aktuelleZeile.subTyp || "Auftritt-Kategorie"}
+                    onChange={(e) => handleChange(e, aktuelleZeile.id)}
+                    className="input-dropdown"
+                  >
+                    <option value="Link">Link</option>
+                    <option value="Neue Mängelmeldung">Neue Mängelmeldung</option>
+                    <option value="Mängelmelder">Mängelmelder</option>
+                    <option value="Auftritt">Auftritt</option>
+                    <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
+                  </select>
+                </div>
+              )}
+
+              {aktuelleZeile.typ !== "Mehrfachzeile" && (
+                <div className="form-group mt-3">
+                  <label>Typ:</label>
+                  <select 
+                    name="subTyp"
+                    value={aktuelleZeile.subTyp || "Auftritt-Kategorie"}
+                    onChange={(e) => handleChange(e, aktuelleZeile.id)}
+                    className="input-dropdown"
+                  >
+                    <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
+                  </select>
+                </div>
+              )}
 
               <div className="form-group">
                 <label>Titel:</label>
@@ -382,6 +406,20 @@ const AppsManagementContent = () => {
                   className="input-text"
                 />
               </div>
+
+              {(aktuelleZeile.subTyp === 'Link' || aktuelleZeile.subTyp === 'Neue Mängelmeldung' || aktuelleZeile.subTyp === 'Mängelmelder') && (
+                <div className="form-group">
+                  <label>URL/Pfad:</label>
+                  <input 
+                    type="text"
+                    name="url"
+                    value={aktuelleZeile.url || ''}
+                    onChange={(e) => handleChange(e, aktuelleZeile.id)}
+                    placeholder="URL oder Pfad eingeben"
+                    className="input-text"
+                  />
+                </div>
+              )}
 
               <div className="form-group">
                 <label>Bild:</label>
@@ -419,22 +457,12 @@ const AppsManagementContent = () => {
             <div className="phone-content">
               <div className="phone-status-bar">Mittelpunkt Oberfranken</div>
               <div className="phone-grid">
-                <div className="app-kachel willkommen">
-                  <img src={vorschauBilder.willkommen} alt="Willkommen" />
-                  <span className="kachel-titel">Willkommen</span>
-                </div>
-                <div className="app-kachel muellkalender">
-                  <img src={vorschauBilder.müllkalender} alt="Müllkalender" />
-                  <span className="kachel-titel">Müllkalender</span>
-                </div>
-                <div className="app-kachel rathaus">
-                  <img src={vorschauBilder.rathaus} alt="Rathaus" />
-                  <span className="kachel-titel">Bürgerbüro</span>
-                </div>
-                <div className="app-kachel veranstaltungen">
-                  <img src={vorschauBilder.veranstaltungen} alt="Veranstaltungen" />
-                  <span className="kachel-titel">Veranstaltungen</span>
-                </div>
+                {startseiteZeilen.map((zeile, index) => (
+                  <div key={zeile.id} className={`app-kachel kachel-${index}`}>
+                    {zeile.bild && <img src={zeile.bild} alt={zeile.titel} />}
+                    <span className="kachel-titel">{zeile.titel}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
