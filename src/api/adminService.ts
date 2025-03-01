@@ -1,113 +1,3 @@
-
-// API-Service für die Admin-Funktionalität
-interface Content {
-  id?: string;
-  type: string;
-  title: string;
-  category_id?: string;
-  image?: string;
-  position?: number;
-}
-
-interface Row {
-  id?: string;
-  type: string;
-  columns: Content[];
-  position?: number;
-}
-
-// Diese Variable sollte aus einer .env-Datei oder einer sicheren Quelle kommen
-const ADMIN_API_SECRET = 'your-api-secret-here';
-
-export const adminService = {
-  // Inhalte (Zeilen) abrufen
-  getContents: async (): Promise<Row[]> => {
-    try {
-      const response = await fetch('/api/admin/contents', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-api-secret': ADMIN_API_SECRET
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Fehler beim Abrufen der Inhalte:', error);
-      throw error;
-    }
-  },
-  
-  // Neuen Inhalt (Zeile) erstellen
-  createContent: async (content: Row): Promise<Row> => {
-    try {
-      const response = await fetch('/api/admin/contents', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-api-secret': ADMIN_API_SECRET
-        },
-        body: JSON.stringify(content)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Fehler beim Erstellen des Inhalts:', error);
-      throw error;
-    }
-  },
-  
-  // Inhalt (Zeile) aktualisieren
-  updateContent: async (id: string, content: Row): Promise<Row> => {
-    try {
-      const response = await fetch(`/api/admin/contents/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-api-secret': ADMIN_API_SECRET
-        },
-        body: JSON.stringify(content)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Fehler beim Aktualisieren des Inhalts:', error);
-      throw error;
-    }
-  },
-  
-  // Inhalt (Zeile) löschen
-  deleteContent: async (id: string): Promise<void> => {
-    try {
-      const response = await fetch(`/api/admin/contents/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-api-secret': ADMIN_API_SECRET
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Fehler beim Löschen des Inhalts:', error);
-      throw error;
-    }
-  }
-};
 import axios from 'axios';
 
 // API-Konfiguration
@@ -125,57 +15,73 @@ const apiClient = axios.create({
 });
 
 // Typdefinitionen für unsere API-Struktur
-interface Column {
-  id?: string;
-  type: string;
+interface AppContent {
+  id?: number;
   title: string;
-  category_id?: string;
-  image?: string;
-}
-
-interface Content {
-  id?: string;
-  type: string;
-  columns: Column[];
-  position?: number;
+  description: string;
+  iconName: string;
+  color: string;
+  route: string;
+  order: number;
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdById: number;
 }
 
 // Mock-Daten für die Entwicklung (wird verwendet, wenn API nicht verfügbar ist)
-const MOCK_DATA: Content[] = [
+const MOCK_DATA: AppContent[] = [
   {
-    id: '1',
-    type: 'Doppelzeile',
-    position: 0,
-    columns: [
-      {
-        id: '1',
-        type: 'Auftritt-Kategorie',
-        title: 'Veranstaltungen',
-        category_id: '147',
-        image: ''
-      },
-      {
-        id: '2',
-        type: 'Auftritt-Kategorie',
-        title: 'Stadtführungen',
-        category_id: '148',
-        image: ''
-      }
-    ]
+    id: 1,
+    title: 'Stadtführer',
+    description: 'Entdecken Sie die Stadt mit unserem digitalen Stadtführer',
+    iconName: 'map',
+    color: '#4CAF50',
+    route: 'stadtfuehrer',
+    order: 0,
+    isActive: true,
+    createdAt: new Date('2023-07-12'),
+    updatedAt: new Date('2023-07-12'),
+    createdById: 1
   },
   {
-    id: '2',
-    type: 'Einzelzeile',
-    position: 1,
-    columns: [
-      {
-        id: '3',
-        type: 'Auftritt-Kategorie',
-        title: 'Sehenswürdigkeiten',
-        category_id: '149',
-        image: ''
-      }
-    ]
+    id: 2,
+    title: 'Event Kalender',
+    description: 'Alle Veranstaltungen in der Stadt auf einen Blick',
+    iconName: 'calendar',
+    color: '#3F51B5',
+    route: 'events',
+    order: 1,
+    isActive: true,
+    createdAt: new Date('2023-06-28'),
+    updatedAt: new Date('2023-06-28'),
+    createdById: 1
+  },
+  {
+    id: 3,
+    title: 'Stadtinformationen',
+    description: 'Wichtige Informationen und Telefonnummern',
+    iconName: 'info',
+    color: '#FF9800',
+    route: 'info',
+    order: 2,
+    isActive: true,
+    createdAt: new Date('2023-06-15'),
+    updatedAt: new Date('2023-06-15'),
+    createdById: 1
+  },
+  {
+    id: 4,
+    title: 'Parken',
+    description: 'Finden Sie freie Parkplätze in der Stadt',
+    iconName: 'map',
+    color: '#2196F3',
+    route: 'parken',
+    order: 3,
+    isActive: true,
+    createdAt: new Date('2023-05-20'),
+    updatedAt: new Date('2023-05-20'),
+    createdById: 1
   }
 ];
 
@@ -185,14 +91,14 @@ const useMockData = true; // Auf false setzen, um echte API-Anfragen zu verwende
 // Admin API Service
 export const adminService = {
   // Alle Inhalte abrufen
-  getContents: async (): Promise<Content[]> => {
+  getContents: async (): Promise<AppContent[]> => {
     try {
       if (useMockData) {
         // Simuliert eine Netzwerkverzögerung
         await new Promise(resolve => setTimeout(resolve, 500));
         return MOCK_DATA;
       }
-      
+
       const response = await apiClient.get('/contents');
       return response.data;
     } catch (error) {
@@ -202,16 +108,21 @@ export const adminService = {
   },
 
   // Neuen Inhalt erstellen
-  createContent: async (content: Content): Promise<Content> => {
+  createContent: async (content: AppContent): Promise<AppContent> => {
     try {
       if (useMockData) {
         // Simuliert eine Netzwerkverzögerung
         await new Promise(resolve => setTimeout(resolve, 500));
-        const newContent = { ...content, id: Date.now().toString() };
+        const newContent = { 
+          ...content,
+          id: Math.max(...MOCK_DATA.map(item => item.id)) + 1,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
         MOCK_DATA.push(newContent);
         return newContent;
       }
-      
+
       const response = await apiClient.post('/contents', content);
       return response.data;
     } catch (error) {
@@ -221,19 +132,23 @@ export const adminService = {
   },
 
   // Bestehenden Inhalt aktualisieren
-  updateContent: async (id: string, content: Content): Promise<Content> => {
+  updateContent: async (id: string, content: AppContent): Promise<AppContent> => {
     try {
       if (useMockData) {
         // Simuliert eine Netzwerkverzögerung
         await new Promise(resolve => setTimeout(resolve, 500));
-        const index = MOCK_DATA.findIndex(item => item.id === id);
+        const index = MOCK_DATA.findIndex(item => item.id === parseInt(id));
         if (index !== -1) {
-          MOCK_DATA[index] = { ...content, id };
+          MOCK_DATA[index] = { 
+            ...content, 
+            id: parseInt(id),
+            updatedAt: new Date() 
+          };
           return MOCK_DATA[index];
         }
         throw new Error('Inhalt nicht gefunden');
       }
-      
+
       const response = await apiClient.put(`/contents/${id}`, content);
       return response.data;
     } catch (error) {
@@ -248,14 +163,14 @@ export const adminService = {
       if (useMockData) {
         // Simuliert eine Netzwerkverzögerung
         await new Promise(resolve => setTimeout(resolve, 500));
-        const index = MOCK_DATA.findIndex(item => item.id === id);
+        const index = MOCK_DATA.findIndex(item => item.id === parseInt(id));
         if (index !== -1) {
           MOCK_DATA.splice(index, 1);
           return;
         }
         throw new Error('Inhalt nicht gefunden');
       }
-      
+
       await apiClient.delete(`/contents/${id}`);
     } catch (error) {
       console.error('Fehler beim Löschen des Inhalts:', error);

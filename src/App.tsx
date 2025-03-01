@@ -1,9 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import { adminService } from './api/adminService';
+import { Check, ChevronDown, Edit, FileEdit, Grid, Home, LogOut, Plus, Settings, Trash, User, X } from 'lucide-react';
+
+// Typdefinitionen für unsere API-Struktur
+interface AppContent {
+  id?: number;
+  title: string;
+  description: string;
+  iconName: string;
+  color: string;
+  route: string;
+  order: number;
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdById: number;
+}
 
 // Sidebar-Komponente
-const Sidebar = () => {
+const Sidebar = ({ activeView, setActiveView }) => {
   return (
     <div className="sidebar">
       <div className="logo">
@@ -11,11 +28,30 @@ const Sidebar = () => {
       </div>
       <nav>
         <ul>
-          <li><a href="#dashboard">Dashboard</a></li>
-          <li><a href="#apps">Apps verwalten</a></li>
-          <li><a href="#users">Benutzer</a></li>
-          <li className="active"><a href="#startseite">Startseite</a></li>
-          <li><a href="#settings">Einstellungen</a></li>
+          <li className={activeView === 'dashboard' ? 'active' : ''}>
+            <a href="#dashboard" onClick={() => setActiveView('dashboard')}>
+              <Home className="icon" size={18} />
+              Dashboard
+            </a>
+          </li>
+          <li className={activeView === 'apps' ? 'active' : ''}>
+            <a href="#apps" onClick={() => setActiveView('apps')}>
+              <Grid className="icon" size={18} />
+              Apps verwalten
+            </a>
+          </li>
+          <li className={activeView === 'users' ? 'active' : ''}>
+            <a href="#users" onClick={() => setActiveView('users')}>
+              <User className="icon" size={18} />
+              Benutzer
+            </a>
+          </li>
+          <li className={activeView === 'settings' ? 'active' : ''}>
+            <a href="#settings" onClick={() => setActiveView('settings')}>
+              <Settings className="icon" size={18} />
+              Einstellungen
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
@@ -31,7 +67,13 @@ const Header = () => {
       </div>
       <div className="user-menu">
         <span>Admin</span>
-        <button className="logout-btn">Abmelden</button>
+        <button className="user-btn">
+          <User size={16} />
+        </button>
+        <button className="logout-btn">
+          <LogOut size={16} />
+          Abmelden
+        </button>
       </div>
     </header>
   );
@@ -42,10 +84,11 @@ const DashboardContent = () => {
   return (
     <div className="dashboard-content">
       <h1>Dashboard</h1>
+      <p className="welcome-message">Willkommen zurück, Admin!</p>
       <div className="stats-grid">
         <div className="stat-card">
-          <h3>Gesamte Apps</h3>
-          <p className="stat-number">12</p>
+          <h3>Aktive Apps</h3>
+          <p className="stat-number">8</p>
         </div>
         <div className="stat-card">
           <h3>Aktive Benutzer</h3>
@@ -61,22 +104,33 @@ const DashboardContent = () => {
         </div>
       </div>
       
-      <h2>Neueste Apps</h2>
-      <div className="app-list">
-        <div className="app-item">
-          <h3>Stadtführer</h3>
-          <p>Erstellt: 12.07.2023</p>
-          <div className="app-actions">
-            <button>Bearbeiten</button>
-            <button className="delete">Löschen</button>
+      <h2>Neueste Aktivitäten</h2>
+      <div className="activity-list">
+        <div className="activity-item">
+          <div className="activity-icon">
+            <FileEdit size={20} />
+          </div>
+          <div className="activity-details">
+            <h4>App "Stadtführer" aktualisiert</h4>
+            <p>Vor 2 Stunden · Admin</p>
           </div>
         </div>
-        <div className="app-item">
-          <h3>Event Kalender</h3>
-          <p>Erstellt: 28.06.2023</p>
-          <div className="app-actions">
-            <button>Bearbeiten</button>
-            <button className="delete">Löschen</button>
+        <div className="activity-item">
+          <div className="activity-icon">
+            <Plus size={20} />
+          </div>
+          <div className="activity-details">
+            <h4>Neue App "Event Kalender" erstellt</h4>
+            <p>Vor 1 Tag · Admin</p>
+          </div>
+        </div>
+        <div className="activity-item">
+          <div className="activity-icon">
+            <User size={20} />
+          </div>
+          <div className="activity-details">
+            <h4>5 neue Benutzer registriert</h4>
+            <p>Vor 2 Tagen</p>
           </div>
         </div>
       </div>
@@ -84,210 +138,138 @@ const DashboardContent = () => {
   );
 };
 
-import { adminService } from './api/adminService';
-
-// Typdefinitionen für unsere API-Struktur
-interface Spalte {
-  id?: number;
-  typ: string;
-  titel: string;
-  auftritt_kategorie_id?: string;
-  bild?: string;
-}
-
-interface Zeile {
-  id?: number | string;
-  typ: string;
-  spalten: Spalte[];
-  position?: number;
-}
-
-// import React und useEffect
-import React, { useState, useEffect } from 'react';
-
-// Startseite Bearbeiten Komponente
-const StartseiteBearbeiten = () => {
-  const [zeilen, setZeilen] = useState<Zeile[]>([
-    {
-      id: 1,
-      typ: 'Doppelzeile',
-      spalten: [
-        {
-          id: 1,
-          typ: 'Auftritt-Kategorie',
-          titel: 'Kategorie',
-          auftritt_kategorie_id: '147',
-          bild: ''
-        },
-        {
-          id: 2,
-          typ: 'Auftritt-Kategorie',
-          titel: 'Subkategorie',
-          auftritt_kategorie_id: '148',
-          bild: ''
-        }
-      ]
-    }
-  ]);
-  
+// App-Verwaltungskomponente
+const AppsManagementContent = () => {
+  const [appContents, setAppContents] = useState<AppContent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingApp, setEditingApp] = useState<AppContent | null>(null);
+  const [formData, setFormData] = useState<AppContent>({
+    title: '',
+    description: '',
+    iconName: 'map',
+    color: '#4CAF50',
+    route: '',
+    order: 0,
+    isActive: true,
+    createdById: 1
+  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Daten beim ersten Laden holen
+  // Apps beim ersten Laden holen
   useEffect(() => {
-    fetchZeilen();
+    fetchApps();
   }, []);
 
-  // Zeilen von der API holen
-  const fetchZeilen = async () => {
+  // Apps von der API holen
+  const fetchApps = async () => {
     try {
       setIsLoading(true);
       setError(null);
       
-      // API-Daten in unser Format konvertieren
-      const apiZeilen = await adminService.getContents();
-      
-      // Format anpassen (falls nötig)
-      const formattedZeilen = apiZeilen.map(row => ({
-        id: row.id,
-        typ: row.type,
-        spalten: row.columns.map(col => ({
-          id: col.id,
-          typ: col.type,
-          titel: col.title,
-          auftritt_kategorie_id: col.category_id,
-          bild: col.image
-        }))
-      }));
-      
-      setZeilen(formattedZeilen.length > 0 ? formattedZeilen : zeilen);
+      const response = await adminService.getContents();
+      setAppContents(response);
     } catch (err) {
-      console.error('Fehler beim Laden der Daten:', err);
-      setError('Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut.');
+      console.error('Fehler beim Laden der Apps:', err);
+      setError('Fehler beim Laden der Apps. Bitte versuchen Sie es später erneut.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Änderungen speichern
-  const saveChanges = async () => {
+  // App erstellen
+  const createApp = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       setIsLoading(true);
       setError(null);
       
-      // Zeilen ins API-Format konvertieren
-      const apiZeilen = zeilen.map(zeile => ({
-        id: zeile.id?.toString(),
-        type: zeile.typ,
-        columns: zeile.spalten.map(spalte => ({
-          id: spalte.id?.toString(),
-          type: spalte.typ,
-          title: spalte.titel,
-          category_id: spalte.auftritt_kategorie_id,
-          image: spalte.bild
-        })),
-        position: zeile.position
-      }));
-      
-      // Alle Zeilen einzeln speichern
-      for (const zeile of apiZeilen) {
-        if (zeile.id) {
-          await adminService.updateContent(zeile.id.toString(), zeile);
-        } else {
-          await adminService.createContent(zeile);
-        }
+      if (editingApp && editingApp.id) {
+        await adminService.updateContent(editingApp.id.toString(), formData);
+      } else {
+        await adminService.createContent(formData);
       }
       
-      alert('Änderungen erfolgreich gespeichert!');
+      await fetchApps();
+      setIsModalOpen(false);
+      resetForm();
     } catch (err) {
-      console.error('Fehler beim Speichern:', err);
-      setError('Fehler beim Speichern der Änderungen. Bitte versuchen Sie es später erneut.');
+      console.error('Fehler beim Speichern der App:', err);
+      setError('Fehler beim Speichern. Bitte versuchen Sie es später erneut.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handler für Titeländerungen
-  const handleTitelChange = (zeileIndex: number, spalteIndex: number, value: string) => {
-    const neueZeilen = [...zeilen];
-    neueZeilen[zeileIndex].spalten[spalteIndex].titel = value;
-    setZeilen(neueZeilen);
-  };
-
-  // Handler für Kategorie-ID-Änderungen
-  const handleKategorieIdChange = (zeileIndex: number, spalteIndex: number, value: string) => {
-    const neueZeilen = [...zeilen];
-    neueZeilen[zeileIndex].spalten[spalteIndex].auftritt_kategorie_id = value;
-    setZeilen(neueZeilen);
-  };
-  
-  // Neue Zeile hinzufügen
-  const addNewZeile = () => {
-    const neueZeile: Zeile = {
-      typ: 'Doppelzeile',
-      spalten: [
-        {
-          typ: 'Auftritt-Kategorie',
-          titel: 'Neue Kategorie',
-          auftritt_kategorie_id: '',
-          bild: ''
-        },
-        {
-          typ: 'Auftritt-Kategorie',
-          titel: 'Neue Kategorie',
-          auftritt_kategorie_id: '',
-          bild: ''
-        }
-      ],
-      position: zeilen.length
-    };
-    
-    setZeilen([...zeilen, neueZeile]);
-  };
-  
-  // Zeile löschen
-  const deleteZeile = async (index: number) => {
-    if (window.confirm('Möchten Sie diese Zeile wirklich löschen?')) {
-      const zeileToDelete = zeilen[index];
-      
+  // App löschen
+  const deleteApp = async (id: number) => {
+    if (window.confirm('Möchten Sie diese App wirklich löschen?')) {
       try {
-        if (zeileToDelete.id) {
-          await adminService.deleteContent(zeileToDelete.id.toString());
-        }
+        setIsLoading(true);
+        setError(null);
         
-        const neueZeilen = [...zeilen];
-        neueZeilen.splice(index, 1);
-        setZeilen(neueZeilen);
+        await adminService.deleteContent(id.toString());
+        await fetchApps();
       } catch (err) {
-        console.error('Fehler beim Löschen:', err);
-        setError('Fehler beim Löschen der Zeile. Bitte versuchen Sie es später erneut.');
+        console.error('Fehler beim Löschen der App:', err);
+        setError('Fehler beim Löschen. Bitte versuchen Sie es später erneut.');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
-  
-  // Handler für Typenänderungen
-  const handleZeileTypChange = (zeileIndex: number, value: string) => {
-    const neueZeilen = [...zeilen];
-    neueZeilen[zeileIndex].typ = value;
-    setZeilen(neueZeilen);
+
+  // Modal zum Bearbeiten/Erstellen öffnen
+  const openEditModal = (app: AppContent | null) => {
+    if (app) {
+      setEditingApp(app);
+      setFormData({...app});
+    } else {
+      setEditingApp(null);
+      resetForm();
+    }
+    setIsModalOpen(true);
   };
-  
-  const handleSpalteTypChange = (zeileIndex: number, spalteIndex: number, value: string) => {
-    const neueZeilen = [...zeilen];
-    neueZeilen[zeileIndex].spalten[spalteIndex].typ = value;
-    setZeilen(neueZeilen);
+
+  // Formular zurücksetzen
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      iconName: 'map',
+      color: '#4CAF50',
+      route: '',
+      order: appContents.length,
+      isActive: true,
+      createdById: 1
+    });
+  };
+
+  // Input-Änderung verarbeiten
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const checkbox = e.target as HTMLInputElement;
+      setFormData({
+        ...formData,
+        [name]: checkbox.checked
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
   };
 
   return (
-    <div className="startseite-content">
-      <div className="startseite-header">
-        <h1>Startseite Bearbeiten</h1>
-        <button 
-          className="save-btn" 
-          onClick={saveChanges} 
-          disabled={isLoading}
-        >
-          {isLoading ? 'Wird gespeichert...' : 'Speichern'}
+    <div className="apps-content">
+      <div className="apps-header">
+        <h1>Apps verwalten</h1>
+        <button className="add-btn" onClick={() => openEditModal(null)}>
+          <Plus size={16} />
+          Neue App
         </button>
       </div>
 
@@ -298,165 +280,187 @@ const StartseiteBearbeiten = () => {
         </div>
       )}
 
-      <div className="startseite-editor">
-        <div className="editor-section">
-          {isLoading && <div className="loading-overlay"><div className="spinner"></div></div>}
-          
-          {zeilen.map((zeile, zeileIndex) => (
-            <div key={zeile.id || `new-${zeileIndex}`} className="zeile-container">
-              <div className="zeile-header">
-                <h2>Zeile {zeileIndex + 1}</h2>
-                <button 
-                  className="delete-zeile-btn" 
-                  onClick={() => deleteZeile(zeileIndex)}
-                >
-                  Löschen
-                </button>
-              </div>
-              
-              <div className="zeile-typ">
-                <label>Typ</label>
-                <div className="select-wrapper">
-                  <select 
-                    value={zeile.typ}
-                    onChange={(e) => handleZeileTypChange(zeileIndex, e.target.value)}
-                  >
-                    <option value="Doppelzeile">Doppelzeile</option>
-                    <option value="Einzelzeile">Einzelzeile</option>
-                    <option value="Banner">Banner</option>
-                  </select>
-                </div>
-              </div>
+      {isLoading && <div className="loading">Daten werden geladen...</div>}
 
-              <div className="spalten-container">
-                <label>Spalten:</label>
-                
-                {zeile.spalten.map((spalte, spalteIndex) => (
-                  <div key={spalte.id || `new-${zeileIndex}-${spalteIndex}`} className="spalte-container">
-                    <div className="spalte-typ">
-                      <label>Typ</label>
-                      <div className="select-wrapper">
-                        <select 
-                          value={spalte.typ}
-                          onChange={(e) => handleSpalteTypChange(zeileIndex, spalteIndex, e.target.value)}
-                        >
-                          <option value="Auftritt-Kategorie">Auftritt-Kategorie</option>
-                          <option value="Bild">Bild</option>
-                          <option value="Text">Text</option>
-                        </select>
-                      </div>
-                    </div>
-                    
-                    <div className="spalte-titel">
-                      <label>Titel</label>
-                      <input 
-                        type="text" 
-                        value={spalte.titel} 
-                        onChange={(e) => handleTitelChange(zeileIndex, spalteIndex, e.target.value)}
-                      />
-                    </div>
-                    
-                    {spalte.typ === 'Auftritt-Kategorie' && (
-                      <div className="spalte-kategorie-id">
-                        <label>Auftritt-Kategorie-Id</label>
-                        <input 
-                          type="text" 
-                          value={spalte.auftritt_kategorie_id || ''} 
-                          onChange={(e) => handleKategorieIdChange(zeileIndex, spalteIndex, e.target.value)}
-                        />
-                      </div>
-                    )}
-                    
-                    {spalte.typ === 'Bild' && (
-                      <div className="spalte-bild">
-                        <label>Bild</label>
-                        <div className="bild-upload">
-                          <input 
-                            type="file" 
-                            id={`bild-upload-${zeileIndex}-${spalteIndex}`} 
-                            hidden 
-                          />
-                          <label 
-                            htmlFor={`bild-upload-${zeileIndex}-${spalteIndex}`} 
-                            className="bild-upload-btn"
-                          >
-                            <span className="icon">📷</span> Bild hochladen
-                          </label>
-                          {spalte.bild && (
-                            <div className="preview-image-container">
-                              <img 
-                                src={spalte.bild} 
-                                alt="Vorschau" 
-                                className="preview-image" 
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+      <div className="apps-grid">
+        {appContents.map((app) => (
+          <div key={app.id} className="app-card" style={{ borderTop: `3px solid ${app.color}` }}>
+            <div className="app-header">
+              <h3>{app.title}</h3>
+              <div className="app-badge" style={{ background: app.isActive ? '#4CAF50' : '#757575' }}>
+                {app.isActive ? 'Aktiv' : 'Inaktiv'}
               </div>
             </div>
-          ))}
-          
-          <button className="add-zeile-btn" onClick={addNewZeile}>
-            + Neue Zeile hinzufügen
-          </button>
-        </div>
-        
-        <div className="preview-section">
-          <h3>Vorschau</h3>
-          <div className="phone-preview">
-            <div className="phone-frame">
-              <div className="phone-content">
-                {zeilen.map((zeile, zeileIndex) => (
-                  <div 
-                    key={zeile.id || `preview-${zeileIndex}`} 
-                    className={`preview-${zeile.typ.toLowerCase()}`}
-                  >
-                    <div className={`preview-grid-${zeile.spalten.length}`}>
-                      {zeile.spalten.map((spalte, spalteIndex) => (
-                        <div 
-                          key={spalte.id || `preview-${zeileIndex}-${spalteIndex}`} 
-                          className="preview-item"
-                        >
-                          {spalte.typ === 'Bild' && spalte.bild && (
-                            <img src={spalte.bild} alt={spalte.titel} className="preview-image" />
-                          )}
-                          <div className="preview-label">{spalte.titel}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <p className="app-description">{app.description}</p>
+            <div className="app-details">
+              <span className="app-route">/{app.route}</span>
+              <span className="app-order">Reihenfolge: {app.order}</span>
+            </div>
+            <div className="app-actions">
+              <button className="edit-btn" onClick={() => openEditModal(app)}>
+                <Edit size={16} />
+                Bearbeiten
+              </button>
+              <button className="delete-btn" onClick={() => deleteApp(app.id)}>
+                <Trash size={16} />
+                Löschen
+              </button>
             </div>
           </div>
-        </div>
+        ))}
       </div>
+
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-header">
+              <h2>{editingApp ? 'App bearbeiten' : 'Neue App erstellen'}</h2>
+              <button className="close-btn" onClick={() => setIsModalOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={createApp}>
+              <div className="form-group">
+                <label htmlFor="title">Titel</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="description">Beschreibung</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                ></textarea>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="iconName">Icon</label>
+                  <select 
+                    id="iconName" 
+                    name="iconName" 
+                    value={formData.iconName}
+                    onChange={handleInputChange}
+                  >
+                    <option value="map">Karte</option>
+                    <option value="calendar">Kalender</option>
+                    <option value="info">Info</option>
+                    <option value="settings">Einstellungen</option>
+                    <option value="user">Benutzer</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="color">Farbe</label>
+                  <input
+                    type="color"
+                    id="color"
+                    name="color"
+                    value={formData.color}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="route">Route</label>
+                  <input
+                    type="text"
+                    id="route"
+                    name="route"
+                    value={formData.route}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="order">Reihenfolge</label>
+                  <input
+                    type="number"
+                    id="order"
+                    name="order"
+                    value={formData.order}
+                    onChange={handleInputChange}
+                    min="0"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group checkbox-group">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  name="isActive"
+                  checked={formData.isActive}
+                  onChange={handleInputChange}
+                />
+                <label htmlFor="isActive">Aktiv</label>
+              </div>
+              <div className="form-actions">
+                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>
+                  Abbrechen
+                </button>
+                <button type="submit" className="save-btn" disabled={isLoading}>
+                  {isLoading ? 'Wird gespeichert...' : 'Speichern'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Benutzer-Verwaltungskomponente (Platzhalter)
+const UsersManagementContent = () => {
+  return (
+    <div className="users-content">
+      <h1>Benutzer verwalten</h1>
+      <p>Diese Funktion wird in einer zukünftigen Version implementiert.</p>
+    </div>
+  );
+};
+
+// Einstellungen-Komponente (Platzhalter)
+const SettingsContent = () => {
+  return (
+    <div className="settings-content">
+      <h1>Einstellungen</h1>
+      <p>Diese Funktion wird in einer zukünftigen Version implementiert.</p>
     </div>
   );
 };
 
 export default function App() {
-  const [activeView, setActiveView] = useState('startseite');
+  const [activeView, setActiveView] = useState('dashboard');
 
   // Funktion zum Anzeigen der entsprechenden Ansicht
   const renderContent = () => {
     switch (activeView) {
       case 'dashboard':
         return <DashboardContent />;
-      case 'startseite':
-        return <StartseiteBearbeiten />;
+      case 'apps':
+        return <AppsManagementContent />;
+      case 'users':
+        return <UsersManagementContent />;
+      case 'settings':
+        return <SettingsContent />;
       default:
-        return <StartseiteBearbeiten />;
+        return <DashboardContent />;
     }
   };
 
   return (
     <div className="admin-dashboard">
-      <Sidebar />
+      <Sidebar activeView={activeView} setActiveView={setActiveView} />
       <div className="main-content">
         <Header />
         {renderContent()}
