@@ -567,6 +567,149 @@
   margin-bottom: 5px;
 }
 
+/* Link-Element Styles */
+.link-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.link-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.preview-link {
+  margin: 10px 0;
+}
+
+.preview-link-item {
+  color: #3498db;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+/* Datei-Element Styles */
+.file-editor {
+  margin-top: 10px;
+}
+
+.file-selector {
+  width: 100%;
+}
+
+.file-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px 15px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-name {
+  font-weight: 500;
+}
+
+.file-type {
+  background: #e2e8f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.change-file-btn {
+  padding: 6px 12px;
+  background: #f1f5f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.file-placeholder {
+  width: 100%;
+  height: 100px;
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.file-placeholder:hover {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.05);
+}
+
+.preview-file {
+  margin: 10px 0;
+}
+
+.file-download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #2c3e50;
+}
+
+.file-download-link:hover {
+  background: #e2e8f0;
+}
+
+.file-icon {
+  font-size: 16px;
+}
+
+/* E-Mail-Element Styles */
+.email-editor, .phone-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.email-input, .phone-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.preview-email, .preview-phone {
+  margin: 10px 0;
+}
+
+.email-link, .phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #2c3e50;
+  text-decoration: none;
+}
+
+.email-link:hover, .phone-link:hover {
+  color: #3498db;
+}
+
+.email-icon, .phone-icon {
+  font-size: 16px;
+}
+
 /* Grundlegendes Reset und Layout */
 * {
   box-sizing: border-box;

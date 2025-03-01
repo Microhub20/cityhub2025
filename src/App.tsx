@@ -1294,6 +1294,192 @@ const ArticleEditorContent = ({ item, onClose }) => {
     );
   };
   
+  // Komponente für Link-Element
+  const LinkElementEditor = ({ element }) => {
+    const [linkData, setLinkData] = useState({
+      url: element.content || '',
+      text: element.linkText || 'Link anzeigen'
+    });
+    
+    const handleLinkChange = (e) => {
+      const { name, value } = e.target;
+      const newData = { ...linkData, [name]: value };
+      setLinkData(newData);
+      
+      // Update parent component
+      updateArticleElement(element.id, { 
+        content: newData.url,
+        linkText: newData.text
+      });
+    };
+    
+    return (
+      <div className="element-editor link-editor">
+        <div className="form-group">
+          <label htmlFor={`link-url-${element.id}`}>URL</label>
+          <input
+            type="url"
+            id={`link-url-${element.id}`}
+            name="url"
+            value={linkData.url}
+            onChange={handleLinkChange}
+            placeholder="https://beispiel.de"
+            className="link-input"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor={`link-text-${element.id}`}>Linktext</label>
+          <input
+            type="text"
+            id={`link-text-${element.id}`}
+            name="text"
+            value={linkData.text}
+            onChange={handleLinkChange}
+            placeholder="Hier klicken"
+            className="link-input"
+          />
+        </div>
+      </div>
+    );
+  };
+  
+  // Komponente für Datei-Element
+  const FileElementEditor = ({ element }) => {
+    const [fileName, setFileName] = useState(element.fileName || '');
+    
+    const handleFileSelect = () => {
+      // Simuliere Dateiauswahl
+      const sampleFile = 'beispiel-dokument.pdf';
+      setFileName(sampleFile);
+      updateArticleElement(element.id, { 
+        content: '/files/beispiel-dokument.pdf',
+        fileName: sampleFile
+      });
+    };
+    
+    return (
+      <div className="element-editor file-editor">
+        <div className="file-selector">
+          {fileName ? (
+            <div className="file-preview">
+              <div className="file-info">
+                <span className="file-name">{fileName}</span>
+                <span className="file-type">PDF</span>
+              </div>
+              <button type="button" className="change-file-btn" onClick={handleFileSelect}>
+                Datei ändern
+              </button>
+            </div>
+          ) : (
+            <div className="file-placeholder" onClick={handleFileSelect}>
+              <div className="placeholder-content">
+                <span>Klicken um eine Datei auszuwählen</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
+  // Komponente für E-Mail-Element
+  const EmailElementEditor = ({ element }) => {
+    const [emailData, setEmailData] = useState({
+      email: element.content || '',
+      text: element.emailText || ''
+    });
+    
+    const handleEmailChange = (e) => {
+      const { name, value } = e.target;
+      const newData = { ...emailData, [name]: value };
+      setEmailData(newData);
+      
+      // Update parent component
+      updateArticleElement(element.id, { 
+        content: newData.email,
+        emailText: newData.text
+      });
+    };
+    
+    return (
+      <div className="element-editor email-editor">
+        <div className="form-group">
+          <label htmlFor={`email-address-${element.id}`}>E-Mail-Adresse</label>
+          <input
+            type="email"
+            id={`email-address-${element.id}`}
+            name="email"
+            value={emailData.email}
+            onChange={handleEmailChange}
+            placeholder="beispiel@gemeinde.de"
+            className="email-input"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor={`email-text-${element.id}`}>Anzeigetext (optional)</label>
+          <input
+            type="text"
+            id={`email-text-${element.id}`}
+            name="text"
+            value={emailData.text}
+            onChange={handleEmailChange}
+            placeholder="Kontakt"
+            className="email-input"
+          />
+        </div>
+      </div>
+    );
+  };
+  
+  // Komponente für Telefonnummer-Element
+  const PhoneElementEditor = ({ element }) => {
+    const [phoneData, setPhoneData] = useState({
+      number: element.content || '',
+      text: element.phoneText || ''
+    });
+    
+    const handlePhoneChange = (e) => {
+      const { name, value } = e.target;
+      const newData = { ...phoneData, [name]: value };
+      setPhoneData(newData);
+      
+      // Update parent component
+      updateArticleElement(element.id, { 
+        content: newData.number,
+        phoneText: newData.text
+      });
+    };
+    
+    return (
+      <div className="element-editor phone-editor">
+        <div className="form-group">
+          <label htmlFor={`phone-number-${element.id}`}>Telefonnummer</label>
+          <input
+            type="tel"
+            id={`phone-number-${element.id}`}
+            name="number"
+            value={phoneData.number}
+            onChange={handlePhoneChange}
+            placeholder="+49 1234 567890"
+            className="phone-input"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor={`phone-text-${element.id}`}>Anzeigetext (optional)</label>
+          <input
+            type="text"
+            id={`phone-text-${element.id}`}
+            name="text"
+            value={phoneData.text}
+            onChange={handlePhoneChange}
+            placeholder="Rathaus"
+            className="phone-input"
+          />
+        </div>
+      </div>
+    );
+  };
+  
   // Komponente für Datum-Element
   const DateElementEditor = ({ element }) => {
     const [showCalendar, setShowCalendar] = useState(false);
@@ -1387,8 +1573,20 @@ const ArticleEditorContent = ({ item, onClose }) => {
               <button className="add-element-btn" onClick={() => addArticleElement('text')}>
                 + Text hinzufügen
               </button>
+              <button className="add-element-btn" onClick={() => addArticleElement('link')}>
+                + Link hinzufügen
+              </button>
               <button className="add-element-btn" onClick={() => addArticleElement('image')}>
                 + Bild hinzufügen
+              </button>
+              <button className="add-element-btn" onClick={() => addArticleElement('file')}>
+                + Datei hinzufügen
+              </button>
+              <button className="add-element-btn" onClick={() => addArticleElement('email')}>
+                + E-Mail hinzufügen
+              </button>
+              <button className="add-element-btn" onClick={() => addArticleElement('phone')}>
+                + Telefonnummer hinzufügen
               </button>
               <button className="add-element-btn" onClick={() => addArticleElement('date')}>
                 + Termine hinzufügen
@@ -1420,13 +1618,21 @@ const ArticleEditorContent = ({ item, onClose }) => {
                     onChange={(e) => updateArticleElement(selectedElement.id, { type: e.target.value })}
                   >
                     <option value="text">Text</option>
+                    <option value="link">Link</option>
                     <option value="image">Bild</option>
+                    <option value="file">Datei</option>
+                    <option value="email">E-Mail</option>
+                    <option value="phone">Telefonnummer</option>
                     <option value="date">Termine</option>
                   </select>
                 </div>
                 
                 {selectedElement.type === 'text' && <TextElementEditor element={selectedElement} />}
+                {selectedElement.type === 'link' && <LinkElementEditor element={selectedElement} />}
                 {selectedElement.type === 'image' && <ImageElementEditor element={selectedElement} />}
+                {selectedElement.type === 'file' && <FileElementEditor element={selectedElement} />}
+                {selectedElement.type === 'email' && <EmailElementEditor element={selectedElement} />}
+                {selectedElement.type === 'phone' && <PhoneElementEditor element={selectedElement} />}
                 {selectedElement.type === 'date' && <DateElementEditor element={selectedElement} />}
                 
                 <div className="element-actions">
@@ -1458,12 +1664,63 @@ const ArticleEditorContent = ({ item, onClose }) => {
                     </div>
                   )}
                   
+                  {element.type === 'link' && (
+                    <div className="preview-link">
+                      {element.content ? (
+                        <a href={element.content} target="_blank" rel="noopener noreferrer" className="preview-link-item">
+                          {element.linkText || element.content}
+                        </a>
+                      ) : (
+                        <em>Link wird hier angezeigt...</em>
+                      )}
+                    </div>
+                  )}
+                  
                   {element.type === 'image' && (
                     <div className="preview-image">
                       {element.content ? (
                         <img src={element.content} alt="Bild" />
                       ) : (
                         <div className="image-placeholder-preview">Bild wird hier angezeigt</div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {element.type === 'file' && (
+                    <div className="preview-file">
+                      {element.fileName ? (
+                        <a href={element.content} className="file-download-link">
+                          <span className="file-icon">📄</span>
+                          <span className="file-name">{element.fileName}</span>
+                        </a>
+                      ) : (
+                        <em>Datei wird hier angezeigt...</em>
+                      )}
+                    </div>
+                  )}
+                  
+                  {element.type === 'email' && (
+                    <div className="preview-email">
+                      {element.content ? (
+                        <a href={`mailto:${element.content}`} className="email-link">
+                          <span className="email-icon">✉️</span>
+                          <span className="email-text">{element.emailText || element.content}</span>
+                        </a>
+                      ) : (
+                        <em>E-Mail wird hier angezeigt...</em>
+                      )}
+                    </div>
+                  )}
+                  
+                  {element.type === 'phone' && (
+                    <div className="preview-phone">
+                      {element.content ? (
+                        <a href={`tel:${element.content.replace(/\s/g, '')}`} className="phone-link">
+                          <span className="phone-icon">📞</span>
+                          <span className="phone-text">{element.phoneText || element.content}</span>
+                        </a>
+                      ) : (
+                        <em>Telefonnummer wird hier angezeigt...</em>
                       )}
                     </div>
                   )}
